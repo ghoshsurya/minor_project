@@ -1,0 +1,116 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_modify %}
+
+{% block page_title %}{% if add %}Add{% else %}Change{% endif %} {{ opts.verbose_name }}{% endblock %}
+{% block page_subtitle %}{% if add %}Create new {{ opts.verbose_name }}{% else %}Edit {{ original.pk }}{% endif %}{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">
+                {% if add %}Add {{ opts.verbose_name }}{% else %}Change {{ opts.verbose_name }}{% endif %}
+            </h1>
+        </div>
+        <div class="flex space-x-3">
+            {% if not add and has_view_permission %}
+            <a href="{% url opts|admin_urlname:'changelist' %}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg">
+                <i class="fas fa-list mr-2"></i>View All
+            </a>
+            {% endif %}
+            {% if not add and has_delete_permission %}
+            <a href="{% url opts|admin_urlname:'delete' original.pk %}" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
+                <i class="fas fa-trash mr-2"></i>Delete
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Form -->
+    <form method="post" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+        
+        {% if errors %}
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div class="flex">
+                <i class="fas fa-exclamation-circle text-red-400 mr-3 mt-1"></i>
+                <div>
+                    <h3 class="text-sm font-medium text-red-800">Please correct the following errors:</h3>
+                    <ul class="mt-2 text-sm text-red-700 list-disc list-inside">
+                        {% for field, error_list in errors.items %}
+                            {% for error in error_list %}
+                            <li>{{ field }}: {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Form Fields -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {% for fieldset in adminform %}
+                {% for line in fieldset %}
+                    {% for field in line %}
+                    <div class="{% if field.field.widget.attrs.class == 'vLargeTextField' %}lg:col-span-2{% endif %}">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ field.field.label }}
+                            {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}
+                        </label>
+                        
+                        <div class="admin-field-wrapper">
+                            {{ field.field }}
+                        </div>
+                        <style>
+                        .admin-field-wrapper input, 
+                        .admin-field-wrapper textarea, 
+                        .admin-field-wrapper select {
+                            width: 100% !important;
+                            padding: 8px 12px !important;
+                            border: 1px solid #d1d5db !important;
+                            border-radius: 8px !important;
+                            background-color: white !important;
+                            color: #1f2937 !important;
+                            font-size: 14px !important;
+                        }
+                        .admin-field-wrapper input:focus,
+                        .admin-field-wrapper textarea:focus,
+                        .admin-field-wrapper select:focus {
+                            outline: none !important;
+                            border-color: #3b82f6 !important;
+                            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+                        }
+                        </style>
+                        
+                        {% if field.field.help_text %}
+                        <p class="mt-1 text-sm text-gray-500">{{ field.field.help_text }}</p>
+                        {% endif %}
+                        
+                        {% if field.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ field.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% endfor %}
+            {% endfor %}
+        </div>
+
+        <!-- Submit Buttons -->
+        <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+            <a href="{% url opts|admin_urlname:'changelist' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                Cancel
+            </a>
+            <button type="submit" name="_save" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium">
+                <i class="fas fa-save mr-2"></i>Save
+            </button>
+            {% if not add %}
+            <button type="submit" name="_continue" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium">
+                <i class="fas fa-edit mr-2"></i>Save and Continue
+            </button>
+            {% endif %}
+        </div>
+    </form>
+</div>
+{% endblock %}

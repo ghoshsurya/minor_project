@@ -1,0 +1,177 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %}Overview of your JobLift system{% endblock %}
+
+{% block content %}
+
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-600 text-sm font-medium">Total Users</p>
+                <p class="text-3xl font-bold text-gray-900">{{ total_users }}</p>
+                <p class="text-{% if recent_users > 0 %}green{% else %}gray{% endif %}-600 text-sm mt-1">+{{ recent_users }} today</p>
+            </div>
+            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-users text-blue-600 text-xl"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-600 text-sm font-medium">CV Uploads</p>
+                <p class="text-3xl font-bold text-gray-900">{{ total_cvs }}</p>
+                <p class="text-{% if recent_cvs > 0 %}green{% else %}gray{% endif %}-600 text-sm mt-1">+{{ recent_cvs }} today</p>
+            </div>
+            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-file-alt text-green-600 text-xl"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-600 text-sm font-medium">Job Listings</p>
+                <p class="text-3xl font-bold text-gray-900">{{ total_jobs }}</p>
+                <p class="text-{% if recent_jobs > 0 %}green{% else %}gray{% endif %}-600 text-sm mt-1">+{{ recent_jobs }} today</p>
+            </div>
+            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-briefcase text-purple-600 text-xl"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-600 text-sm font-medium">Avg ATS Score</p>
+                <p class="text-3xl font-bold text-gray-900">{{ avg_score }}%</p>
+                <p class="text-blue-600 text-sm mt-1">Current average</p>
+            </div>
+            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-chart-line text-yellow-600 text-xl"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Recent Activity -->
+    <div class="lg:col-span-2">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-6">Recent Activity</h2>
+            <div class="space-y-4">
+                {% for user in latest_users %}
+                <div class="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user-plus text-green-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-medium text-gray-900">New user registered</p>
+                        <p class="text-sm text-gray-600">{{ user.email }} joined the platform</p>
+                    </div>
+                    <span class="text-sm text-gray-500">{{ user.date_joined|timesince }} ago</span>
+                </div>
+                {% endfor %}
+                
+                {% for cv in latest_cvs %}
+                <div class="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-upload text-blue-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-medium text-gray-900">CV uploaded for analysis</p>
+                        <p class="text-sm text-gray-600">{{ cv.job_role }} - Score: {{ cv.ats_score }}%</p>
+                    </div>
+                    <span class="text-sm text-gray-500">{{ cv.created_at|timesince }} ago</span>
+                </div>
+                {% endfor %}
+                
+                {% for message in latest_messages %}
+                <div class="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+                    <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-envelope text-purple-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-medium text-gray-900">New contact message</p>
+                        <p class="text-sm text-gray-600">From {{ message.name }}</p>
+                    </div>
+                    <span class="text-sm text-gray-500">{{ message.created_at|timesince }} ago</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- System Overview -->
+    <div class="lg:col-span-1">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <h3 class="text-lg font-bold text-gray-900 mb-4">System Status</h3>
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-600">Server Status</span>
+                    <span class="flex items-center text-green-600">
+                        <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                        Online
+                    </span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-600">Database</span>
+                    <span class="flex items-center text-green-600">
+                        <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                        Connected
+                    </span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-600">Job Scraper</span>
+                    <span class="flex items-center text-blue-600">
+                        <div class="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                        Running
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Metrics -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-bold text-gray-900 mb-4">Performance</h3>
+            <div class="space-y-4">
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-gray-600">CPU Usage</span>
+                        <span class="text-gray-900 font-medium">45%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-blue-600 h-2 rounded-full" style="width: 45%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-gray-600">Memory</span>
+                        <span class="text-gray-900 font-medium">62%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-green-600 h-2 rounded-full" style="width: 62%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-gray-600">Storage</span>
+                        <span class="text-gray-900 font-medium">28%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-yellow-600 h-2 rounded-full" style="width: 28%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

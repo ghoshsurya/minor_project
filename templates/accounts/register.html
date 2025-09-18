@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Join JobLift - Create Your Account{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center p-4">
+    <!-- Background Animation -->
+    <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute -top-40 -right-40 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse"></div>
+        <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse animation-delay-2000"></div>
+        <div class="absolute top-40 left-40 w-80 h-80 bg-indigo-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse animation-delay-4000"></div>
+    </div>
+
+    <div class="relative z-10 w-full max-w-md">
+        <!-- Logo Section -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl mb-4 shadow-lg">
+                <i class="fas fa-rocket text-2xl text-white"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-white mb-2">Join JobLift</h1>
+            <p class="text-gray-300">Start your career transformation today</p>
+        </div>
+
+        <!-- Registration Form -->
+        <div class="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 p-8">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                {% if form.errors %}
+                <div class="bg-red-500/20 border border-red-400/50 rounded-lg p-4 mb-6">
+                    <div class="flex items-center">
+                        <i class="fas fa-exclamation-circle text-red-400 mr-3"></i>
+                        <div>
+                            <h3 class="text-sm font-medium text-red-200">Please correct the following errors:</h3>
+                            <ul class="mt-2 text-sm text-red-300 space-y-1">
+                                {% for field, errors in form.errors.items %}
+                                    {% for error in errors %}
+                                    <li>{{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Username Field -->
+                <div class="space-y-2">
+                    <label for="id_username" class="block text-sm font-medium text-gray-200">
+                        Username <span class="text-red-400">*</span>
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-user text-gray-400"></i>
+                        </div>
+                        <input type="text" 
+                               name="username" 
+                               id="id_username"
+                               class="w-full pl-10 pr-4 py-3 bg-white/10 border border-gray-300/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent backdrop-blur-sm"
+                               placeholder="Choose a unique username"
+                               required
+                               value="{{ form.username.value|default:'' }}">
+                    </div>
+                </div>
+
+                <!-- Email Field -->
+                <div class="space-y-2">
+                    <label for="id_email" class="block text-sm font-medium text-gray-200">
+                        Email Address <span class="text-red-400">*</span>
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-envelope text-gray-400"></i>
+                        </div>
+                        <input type="email" 
+                               name="email" 
+                               id="id_email"
+                               class="w-full pl-10 pr-4 py-3 bg-white/10 border border-gray-300/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent backdrop-blur-sm"
+                               placeholder="your.email@example.com"
+                               required
+                               value="{{ form.email.value|default:'' }}">
+                    </div>
+                </div>
+
+                <!-- First Name Field -->
+                <div class="space-y-2">
+                    <label for="id_first_name" class="block text-sm font-medium text-gray-200">
+                        First Name
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-id-card text-gray-400"></i>
+                        </div>
+                        <input type="text" 
+                               name="first_name" 
+                               id="id_first_name"
+                               class="w-full pl-10 pr-4 py-3 bg-white/10 border border-gray-300/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent backdrop-blur-sm"
+                               placeholder="Your first name"
+                               value="{{ form.first_name.value|default:'' }}">
+                    </div>
+                </div>
+
+                <!-- Last Name Field -->
+                <div class="space-y-2">
+                    <label for="id_last_name" class="block text-sm font-medium text-gray-200">
+                        Last Name
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-id-card text-gray-400"></i>
+                        </div>
+                        <input type="text" 
+                               name="last_name" 
+                               id="id_last_name"
+                               class="w-full pl-10 pr-4 py-3 bg-white/10 border border-gray-300/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent backdrop-blur-sm"
+                               placeholder="Your last name"
+                               value="{{ form.last_name.value|default:'' }}">
+                    </div>
+                </div>
+
+                <!-- Password Field -->
+                <div class="space-y-2">
+                    <label for="id_password1" class="block text-sm font-medium text-gray-200">
+                        Password <span class="text-red-400">*</span>
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-lock text-gray-400"></i>
+                        </div>
+                        <input type="password" 
+                               name="password1" 
+                               id="id_password1"
+                               class="w-full pl-10 pr-12 py-3 bg-white/10 border border-gray-300/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent backdrop-blur-sm"
+                               placeholder="Create a strong password"
+                               required>
+                        <button type="button" onclick="togglePassword('id_password1')" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                            <i class="fas fa-eye text-gray-400 hover:text-white" id="eye1"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Confirm Password Field -->
+                <div class="space-y-2">
+                    <label for="id_password2" class="block text-sm font-medium text-gray-200">
+                        Confirm Password <span class="text-red-400">*</span>
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-lock text-gray-400"></i>
+                        </div>
+                        <input type="password" 
+                               name="password2" 
+                               id="id_password2"
+                               class="w-full pl-10 pr-12 py-3 bg-white/10 border border-gray-300/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent backdrop-blur-sm"
+                               placeholder="Confirm your password"
+                               required>
+                        <button type="button" onclick="togglePassword('id_password2')" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                            <i class="fas fa-eye text-gray-400 hover:text-white" id="eye2"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" 
+                        class="w-full bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black font-bold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-yellow-400 shadow-lg">
+                    <i class="fas fa-rocket mr-2"></i>
+                    Create My Account
+                </button>
+
+                <!-- Login Link -->
+                <div class="text-center pt-4">
+                    <p class="text-gray-300">
+                        Already have an account? 
+                        <a href="{% url 'accounts:login' %}" class="text-yellow-400 hover:text-yellow-300 font-medium">
+                            Sign in here
+                        </a>
+                    </p>
+                </div>
+            </form>
+        </div>
+
+        <!-- Features Preview -->
+        <div class="mt-8 grid grid-cols-3 gap-4 text-center">
+            <div class="text-white/80">
+                <i class="fas fa-chart-line text-2xl mb-2 block"></i>
+                <p class="text-xs">ATS Analysis</p>
+            </div>
+            <div class="text-white/80">
+                <i class="fas fa-briefcase text-2xl mb-2 block"></i>
+                <p class="text-xs">Job Matching</p>
+            </div>
+            <div class="text-white/80">
+                <i class="fas fa-trophy text-2xl mb-2 block"></i>
+                <p class="text-xs">Career Growth</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePassword(fieldId) {
+    const field = document.getElementById(fieldId);
+    const eyeIcon = document.getElementById(fieldId === 'id_password1' ? 'eye1' : 'eye2');
+    
+    if (field.type === 'password') {
+        field.type = 'text';
+        eyeIcon.classList.remove('fa-eye');
+        eyeIcon.classList.add('fa-eye-slash');
+    } else {
+        field.type = 'password';
+        eyeIcon.classList.remove('fa-eye-slash');
+        eyeIcon.classList.add('fa-eye');
+    }
+}
+
+// Add floating animation to background elements
+document.addEventListener('DOMContentLoaded', function() {
+    const elements = document.querySelectorAll('.animate-pulse');
+    elements.forEach((el, index) => {
+        el.style.animationDelay = `${index * 2}s`;
+    });
+});
+</script>
+
+<style>
+.animation-delay-2000 {
+    animation-delay: 2s;
+}
+.animation-delay-4000 {
+    animation-delay: 4s;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Job Search - JobLift{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-12">
+    <!-- Search Header -->
+    <div class="mb-8">
+        <h2 class="text-4xl font-bold text-white mb-4">Find Your Dream Job</h2>
+        <p class="text-gray-300 text-xl">Discover tailored job opportunities matched to your optimized CV</p>
+    </div>
+    
+    <!-- Search Form -->
+    <div class="bg-gray-800 shadow-xl rounded-lg mb-8">
+        <div class="p-6">
+            <form method="get" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div class="md:col-span-2">
+                    <input type="text" name="q" placeholder="Search jobs, companies, or keywords..." class="w-full px-4 py-3 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500" value="{{ request.GET.q }}">
+                </div>
+                <div>
+                    <input type="text" name="location" placeholder="Location" class="w-full px-4 py-3 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500" value="{{ request.GET.location }}">
+                </div>
+                <div>
+                    <select name="job_type" class="w-full px-4 py-3 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500">
+                        <option value="">All Types</option>
+                        <option value="full-time">Full Time</option>
+                        <option value="part-time">Part Time</option>
+                        <option value="contract">Contract</option>
+                        <option value="remote">Remote</option>
+                    </select>
+                </div>
+                <div>
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Results Summary -->
+    <div class="flex justify-between items-center mb-8">
+        <h5 class="text-2xl font-bold text-white">{{ total_jobs }} Jobs Found</h5>
+        <div class="flex space-x-4">
+            <a href="{% url 'job_scraper:alerts' %}" class="border border-blue-500 text-blue-400 hover:bg-blue-500 hover:text-white px-4 py-2 rounded transition-colors">
+                <i class="fas fa-bell mr-2"></i>Job Alerts
+            </a>
+            {% if user.is_staff %}
+            <form method="post" action="{% url 'job_scraper:scrape' %}" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="border border-green-500 text-green-400 hover:bg-green-500 hover:text-white px-4 py-2 rounded transition-colors">
+                    <i class="fas fa-sync mr-2"></i>Refresh Jobs
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Job Listings -->
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div class="lg:col-span-3">
+            {% for job in jobs %}
+            <div class="bg-gray-800 p-6 rounded-lg border-l-4 border-blue-500 mb-6 hover:bg-gray-750 transition-colors">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="md:col-span-2">
+                        <h5 class="text-xl font-bold mb-3 text-white">
+                            <a href="{% url 'job_scraper:detail' job.id %}" class="hover:text-blue-400">
+                                {{ job.title }}
+                            </a>
+                        </h5>
+                        <p class="text-blue-400 font-semibold mb-3">{{ job.company }}</p>
+                        <p class="text-gray-300 mb-4">
+                            <i class="fas fa-map-marker-alt mr-2"></i>{{ job.location }}
+                            <span class="mx-3">•</span>
+                            <i class="fas fa-briefcase mr-2"></i>{{ job.job_type|title }}
+                        </p>
+                        <p class="text-gray-300 mb-4">{{ job.description|truncatewords:25 }}</p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-gray-600 text-white px-3 py-1 rounded-full text-sm">{{ job.experience_required }}</span>
+                            {% if job.salary_range != 'Not disclosed' %}
+                            <span class="bg-green-600 text-white px-3 py-1 rounded-full text-sm">{{ job.salary_range }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <small class="text-gray-400 block mb-4">{{ job.posted_date|timesince }} ago</small>
+                        <a href="{{ job.job_url }}" target="_blank" class="block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded mb-2 text-center">
+                            <i class="fas fa-external-link-alt mr-2"></i>Apply Now
+                        </a>
+                        <a href="{% url 'job_scraper:detail' job.id %}" class="block border border-blue-500 text-blue-400 hover:bg-blue-500 hover:text-white px-4 py-2 rounded text-center">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-20">
+                <i class="fas fa-search text-6xl text-gray-500 mb-6"></i>
+                <h4 class="text-2xl text-white mb-4">No jobs found</h4>
+                <p class="text-gray-300">Try adjusting your search criteria</p>
+            </div>
+            {% endfor %}
+            
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <nav aria-label="Job search pagination">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.location %}&location={{ request.GET.location }}{% endif %}">First</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.location %}&location={{ request.GET.location }}{% endif %}">Previous</a>
+                        </li>
+                    {% endif %}
+                    
+                    <li class="page-item active">
+                        <span class="page-link">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                    </li>
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.location %}&location={{ request.GET.location }}{% endif %}">Next</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.location %}&location={{ request.GET.location }}{% endif %}">Last</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+        
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="lg:col-span-1">
+            <div class="bg-gray-800 shadow-xl rounded-lg mb-6">
+                <div class="p-4 border-b border-gray-700">
+                    <h6 class="text-lg font-bold text-white">Top Job Portals</h6>
+                </div>
+                <div class="p-4">
+                    {% for portal in job_portals %}
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-white">{{ portal.name }}</span>
+                        <a href="{{ portal.base_url }}" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
+                            <i class="fas fa-external-link-alt"></i>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="bg-gray-800 shadow-xl rounded-lg">
+                <div class="p-4 border-b border-gray-700">
+                    <h6 class="text-lg font-bold text-white">Quick Tips</h6>
+                </div>
+                <div class="p-4">
+                    <ul class="space-y-3">
+                        <li class="text-gray-300"><i class="fas fa-check text-green-500 mr-3"></i>Use specific keywords</li>
+                        <li class="text-gray-300"><i class="fas fa-check text-green-500 mr-3"></i>Set up job alerts</li>
+                        <li class="text-gray-300"><i class="fas fa-check text-green-500 mr-3"></i>Apply within 24 hours</li>
+                        <li class="text-gray-300"><i class="fas fa-check text-green-500 mr-3"></i>Customize your CV</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

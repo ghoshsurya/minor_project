@@ -1,0 +1,141 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrahead %}{{ block.super }}
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        font-family: 'Inter', sans-serif;
+    }
+    .login-container {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+</style>
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} login{% endblock %}
+
+{% block usertools %}{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+{% block nav-sidebar %}{% endblock %}
+
+{% block content_title %}{% endblock %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center p-4">
+    <div class="login-container max-w-md w-full rounded-2xl shadow-2xl p-8">
+        <!-- Logo/Header -->
+        <div class="text-center mb-8">
+            <div class="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-shield-alt text-3xl text-white"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-white mb-2">Admin Portal</h1>
+            <p class="text-gray-200">JobLift</p>
+        </div>
+
+        {% if form.errors and not form.non_field_errors %}
+            <div class="bg-red-500 bg-opacity-20 border border-red-400 text-red-100 px-4 py-3 rounded-lg mb-6">
+                <p class="font-medium">Please correct the errors below.</p>
+            </div>
+        {% endif %}
+
+        {% if form.non_field_errors %}
+            <div class="bg-red-500 bg-opacity-20 border border-red-400 text-red-100 px-4 py-3 rounded-lg mb-6">
+                {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form action="{{ app_path }}" method="post" id="login-form" class="space-y-6">
+            {% csrf_token %}
+            
+            <div>
+                <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-gray-200 mb-2">
+                    {{ form.username.label_tag }}
+                </label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-user text-gray-400"></i>
+                    </div>
+                    <input type="text" 
+                           name="username" 
+                           id="{{ form.username.id_for_label }}"
+                           class="w-full pl-10 pr-4 py-3 bg-white bg-opacity-10 border border-gray-300 border-opacity-30 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                           placeholder="Enter your username"
+                           required
+                           {% if form.username.value %}value="{{ form.username.value }}"{% endif %}>
+                </div>
+                {% if form.username.errors %}
+                    <p class="mt-1 text-sm text-red-300">{{ form.username.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label for="{{ form.password.id_for_label }}" class="block text-sm font-medium text-gray-200 mb-2">
+                    {{ form.password.label_tag }}
+                </label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-lock text-gray-400"></i>
+                    </div>
+                    <input type="password" 
+                           name="password" 
+                           id="{{ form.password.id_for_label }}"
+                           class="w-full pl-10 pr-4 py-3 bg-white bg-opacity-10 border border-gray-300 border-opacity-30 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                           placeholder="Enter your password"
+                           required>
+                </div>
+                {% if form.password.errors %}
+                    <p class="mt-1 text-sm text-red-300">{{ form.password.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <input type="hidden" name="next" value="{{ next }}">
+
+            <button type="submit" 
+                    class="w-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-bold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                <i class="fas fa-sign-in-alt mr-2"></i>
+                Sign In
+            </button>
+        </form>
+
+        <!-- Footer -->
+        <div class="mt-8 text-center">
+            <p class="text-gray-300 text-sm">
+                Secure access to JobLift administration
+            </p>
+            <div class="flex justify-center space-x-4 mt-4">
+                <div class="w-2 h-2 bg-white bg-opacity-40 rounded-full"></div>
+                <div class="w-2 h-2 bg-white bg-opacity-40 rounded-full"></div>
+                <div class="w-2 h-2 bg-white bg-opacity-60 rounded-full"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Add some interactive effects
+document.addEventListener('DOMContentLoaded', function() {
+    const inputs = document.querySelectorAll('input[type="text"], input[type="password"]');
+    
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.classList.add('scale-105');
+        });
+        
+        input.addEventListener('blur', function() {
+            this.parentElement.classList.remove('scale-105');
+        });
+    });
+});
+</script>
+{% endblock %}

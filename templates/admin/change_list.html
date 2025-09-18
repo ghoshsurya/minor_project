@@ -1,0 +1,105 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_list %}
+
+{% block page_title %}{{ title }}{% endblock %}
+{% block page_subtitle %}Manage {{ opts.verbose_name_plural }}{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <!-- Header with Actions -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">{{ title }}</h1>
+            <p class="text-gray-600">{{ cl.result_count }} {{ cl.result_count|pluralize:"item,items" }}</p>
+        </div>
+        {% if has_add_permission %}
+        <a href="{% url cl.opts|admin_urlname:'add' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium">
+            <i class="fas fa-plus mr-2"></i>Add {{ opts.verbose_name }}
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Search and Filters -->
+    {% if cl.search_fields %}
+    <div class="mb-6">
+        <form method="get" class="flex space-x-4">
+            <div class="flex-1">
+                <input type="text" name="q" value="{{ cl.query }}" placeholder="Search {{ opts.verbose_name_plural }}..." 
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <button type="submit" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg">
+                <i class="fas fa-search"></i>
+            </button>
+        </form>
+    </div>
+    {% endif %}
+
+    <!-- Results Table -->
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    {% for header in result_headers %}
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {{ header.text }}
+                    </th>
+                    {% endfor %}
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for result in results %}
+                <tr class="hover:bg-gray-50">
+                    {% for item in result %}
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ item }}</td>
+                    {% endfor %}
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div class="flex justify-end space-x-2">
+                            {% if result.0 %}
+                            <a href="{% url cl.opts|admin_urlname:'change' result.0.pk %}" class="text-blue-600 hover:text-blue-900">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url cl.opts|admin_urlname:'delete' result.0.pk %}" class="text-red-600 hover:text-red-900">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="{{ result_headers|length|add:1 }}" class="px-6 py-12 text-center text-gray-500">
+                        <i class="fas fa-inbox text-4xl mb-4 block"></i>
+                        No {{ opts.verbose_name_plural }} found
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if cl.result_count > cl.list_per_page %}
+    <div class="mt-6 flex justify-between items-center">
+        <div class="text-sm text-gray-700">
+            Showing {{ cl.result_count }} results
+        </div>
+        <div class="flex space-x-2">
+            {% if cl.result_list.has_previous %}
+            <a href="?{% if cl.query %}q={{ cl.query }}&{% endif %}p={{ cl.result_list.previous_page_number }}" 
+               class="px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Previous</a>
+            {% endif %}
+            
+            <span class="px-3 py-2 bg-blue-600 text-white rounded-lg">
+                {{ cl.result_list.number }} of {{ cl.result_list.paginator.num_pages }}
+            </span>
+            
+            {% if cl.result_list.has_next %}
+            <a href="?{% if cl.query %}q={{ cl.query }}&{% endif %}p={{ cl.result_list.next_page_number }}" 
+               class="px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Next</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
