@@ -50,3 +50,6 @@ class ContactView(CreateView):
 
 class AboutView(TemplateView):
     template_name = 'core/about.html'
+
+class FlowchartView(TemplateView):
+    template_name = 'core/flowchart.html'

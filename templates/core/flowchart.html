@@ -1,0 +1,284 @@
+{% extends 'base.html' %}
+
+{% block title %}Project Structure - JobLift{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-white mb-4">🏗️ Project Architecture</h1>
+        <p class="text-gray-300 text-xl">ATS CV Optimizer - File Structure & Flow Diagram</p>
+    </div>
+
+    <!-- Architecture Overview -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+        <div class="bg-slate-800/50 backdrop-blur-md rounded-2xl border border-slate-600/30 p-6">
+            <h2 class="text-2xl font-bold text-white mb-4 flex items-center">
+                <i class="fas fa-server mr-3 text-blue-400"></i>Backend (Django)
+            </h2>
+            <div class="space-y-3">
+                <div class="flex items-center text-gray-300">
+                    <i class="fas fa-folder text-yellow-400 mr-3"></i>
+                    <span class="font-mono">ats_optimizer/</span> - Main Django project
+                </div>
+                <div class="flex items-center text-gray-300">
+                    <i class="fas fa-folder text-green-400 mr-3"></i>
+                    <span class="font-mono">accounts/</span> - User authentication
+                </div>
+                <div class="flex items-center text-gray-300">
+                    <i class="fas fa-folder text-purple-400 mr-3"></i>
+                    <span class="font-mono">cv_optimizer/</span> - CV analysis & AI
+                </div>
+                <div class="flex items-center text-gray-300">
+                    <i class="fas fa-folder text-red-400 mr-3"></i>
+                    <span class="font-mono">job_scraper/</span> - Job search & scraping
+                </div>
+                <div class="flex items-center text-gray-300">
+                    <i class="fas fa-folder text-blue-400 mr-3"></i>
+                    <span class="font-mono">core/</span> - Core functionality
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-slate-800/50 backdrop-blur-md rounded-2xl border border-slate-600/30 p-6">
+            <h2 class="text-2xl font-bold text-white mb-4 flex items-center">
+                <i class="fas fa-desktop mr-3 text-green-400"></i>Frontend (Templates)
+            </h2>
+            <div class="space-y-3">
+                <div class="flex items-center text-gray-300">
+                    <i class="fas fa-file-code text-blue-400 mr-3"></i>
+                    <span class="font-mono">templates/</span> - HTML templates
+                </div>
+                <div class="flex items-center text-gray-300">
+                    <i class="fas fa-palette text-purple-400 mr-3"></i>
+                    <span class="font-mono">static/</span> - CSS, JS, Images
+                </div>
+                <div class="flex items-center text-gray-300">
+                    <i class="fas fa-mobile-alt text-green-400 mr-3"></i>
+                    <span>Tailwind CSS</span> - Responsive design
+                </div>
+                <div class="flex items-center text-gray-300">
+                    <i class="fab fa-js-square text-yellow-400 mr-3"></i>
+                    <span>JavaScript</span> - Interactive features
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- File Structure Diagram -->
+    <div class="bg-slate-800/50 backdrop-blur-md rounded-2xl border border-slate-600/30 p-6 mb-8">
+        <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
+            <i class="fas fa-sitemap mr-3 text-cyan-400"></i>Complete File Structure
+        </h2>
+        
+        <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+            <pre class="text-sm text-gray-300 font-mono leading-relaxed">
+<span class="text-cyan-400">📁 MINOR PROJECT/</span>
+├── <span class="text-yellow-400">🚀 start.py</span>                    <span class="text-gray-500"># Single command startup</span>
+├── <span class="text-green-400">⚙️ manage.py</span>                   <span class="text-gray-500"># Django management</span>
+├── <span class="text-blue-400">📄 requirements.txt</span>             <span class="text-gray-500"># Dependencies</span>
+├── <span class="text-purple-400">🔧 .env</span>                       <span class="text-gray-500"># Environment variables</span>
+├── <span class="text-red-400">🗄️ db.sqlite3</span>                  <span class="text-gray-500"># Database</span>
+│
+├── <span class="text-cyan-400">📁 ats_optimizer/</span>              <span class="text-gray-500"># Main Django Project</span>
+│   ├── <span class="text-green-400">⚙️ settings.py</span>             <span class="text-gray-500"># Project settings</span>
+│   ├── <span class="text-blue-400">🌐 urls.py</span>                 <span class="text-gray-500"># URL routing</span>
+│   ├── <span class="text-purple-400">🔧 wsgi.py</span>                <span class="text-gray-500"># WSGI config</span>
+│   └── <span class="text-yellow-400">⚡ asgi.py</span>                <span class="text-gray-500"># ASGI config</span>
+│
+├── <span class="text-cyan-400">📁 accounts/</span>                   <span class="text-gray-500"># User Management</span>
+│   ├── <span class="text-green-400">👤 models.py</span>               <span class="text-gray-500"># User models</span>
+│   ├── <span class="text-blue-400">📝 forms.py</span>                <span class="text-gray-500"># User forms</span>
+│   ├── <span class="text-purple-400">🎯 views.py</span>               <span class="text-gray-500"># User views</span>
+│   └── <span class="text-yellow-400">🌐 urls.py</span>                <span class="text-gray-500"># User URLs</span>
+│
+├── <span class="text-cyan-400">📁 cv_optimizer/</span>               <span class="text-gray-500"># CV Analysis & AI</span>
+│   ├── <span class="text-green-400">🤖 gemini_service.py</span>       <span class="text-gray-500"># AI CV analysis</span>
+│   ├── <span class="text-blue-400">🎯 job_matcher.py</span>           <span class="text-gray-500"># Job matching</span>
+│   ├── <span class="text-purple-400">📄 pdf_generator.py</span>        <span class="text-gray-500"># PDF creation</span>
+│   ├── <span class="text-yellow-400">📊 ai_views.py</span>             <span class="text-gray-500"># AI-powered views</span>
+│   ├── <span class="text-red-400">🔧 latex_compiler.py</span>        <span class="text-gray-500"># LaTeX processing</span>
+│   └── <span class="text-cyan-400">⚙️ utils.py</span>                 <span class="text-gray-500"># Utility functions</span>
+│
+├── <span class="text-cyan-400">📁 job_scraper/</span>                <span class="text-gray-500"># Job Search & Scraping</span>
+│   ├── <span class="text-green-400">🕷️ scraper.py</span>              <span class="text-gray-500"># Job scraping</span>
+│   ├── <span class="text-blue-400">🔍 real_scraper.py</span>          <span class="text-gray-500"># Real-time scraping</span>
+│   ├── <span class="text-purple-400">🌐 api_views.py</span>            <span class="text-gray-500"># API endpoints</span>
+│   └── <span class="text-yellow-400">📊 models.py</span>               <span class="text-gray-500"># Job models</span>
+│
+├── <span class="text-cyan-400">📁 core/</span>                       <span class="text-gray-500"># Core Functionality</span>
+│   ├── <span class="text-green-400">🏠 views.py</span>                <span class="text-gray-500"># Core views</span>
+│   ├── <span class="text-blue-400">👑 admin_views.py</span>           <span class="text-gray-500"># Admin interface</span>
+│   └── <span class="text-purple-400">📊 models.py</span>               <span class="text-gray-500"># Core models</span>
+│
+├── <span class="text-cyan-400">📁 templates/</span>                  <span class="text-gray-500"># Frontend Templates</span>
+│   ├── <span class="text-green-400">🎨 base.html</span>               <span class="text-gray-500"># Base template</span>
+│   ├── <span class="text-blue-400">📁 accounts/</span>               <span class="text-gray-500"># User templates</span>
+│   ├── <span class="text-purple-400">📁 cv_optimizer/</span>          <span class="text-gray-500"># CV templates</span>
+│   ├── <span class="text-yellow-400">📁 job_scraper/</span>           <span class="text-gray-500"># Job templates</span>
+│   └── <span class="text-red-400">📁 core/</span>                   <span class="text-gray-500"># Core templates</span>
+│
+├── <span class="text-cyan-400">📁 static/</span>                     <span class="text-gray-500"># Static Assets</span>
+│   ├── <span class="text-green-400">🎨 css/</span>                    <span class="text-gray-500"># Stylesheets</span>
+│   ├── <span class="text-blue-400">⚡ js/</span>                     <span class="text-gray-500"># JavaScript</span>
+│   └── <span class="text-purple-400">🖼️ images/</span>                <span class="text-gray-500"># Images</span>
+│
+└── <span class="text-cyan-400">📁 media/</span>                      <span class="text-gray-500"># User Uploads</span>
+    ├── <span class="text-green-400">📄 cvs/</span>                    <span class="text-gray-500"># CV files</span>
+    ├── <span class="text-blue-400">👤 profiles/</span>               <span class="text-gray-500"># Profile images</span>
+    └── <span class="text-purple-400">📊 latex_pdfs/</span>            <span class="text-gray-500"># Generated PDFs</span>
+            </pre>
+        </div>
+    </div>
+
+    <!-- Data Flow Diagram -->
+    <div class="bg-slate-800/50 backdrop-blur-md rounded-2xl border border-slate-600/30 p-6 mb-8">
+        <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
+            <i class="fas fa-flow-chart mr-3 text-pink-400"></i>Application Flow
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- User Flow -->
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold text-blue-400 mb-4">👤 User Journey</h3>
+                <div class="space-y-3">
+                    <div class="bg-blue-600/20 border border-blue-500/30 rounded-lg p-3">
+                        <div class="text-white font-semibold">1. Registration</div>
+                        <div class="text-gray-300 text-sm">accounts/views.py</div>
+                    </div>
+                    <div class="text-center text-gray-400">↓</div>
+                    <div class="bg-green-600/20 border border-green-500/30 rounded-lg p-3">
+                        <div class="text-white font-semibold">2. CV Upload</div>
+                        <div class="text-gray-300 text-sm">cv_optimizer/views.py</div>
+                    </div>
+                    <div class="text-center text-gray-400">↓</div>
+                    <div class="bg-purple-600/20 border border-purple-500/30 rounded-lg p-3">
+                        <div class="text-white font-semibold">3. AI Analysis</div>
+                        <div class="text-gray-300 text-sm">gemini_service.py</div>
+                    </div>
+                    <div class="text-center text-gray-400">↓</div>
+                    <div class="bg-yellow-600/20 border border-yellow-500/30 rounded-lg p-3">
+                        <div class="text-white font-semibold">4. Job Search</div>
+                        <div class="text-gray-300 text-sm">job_scraper/api_views.py</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Flow -->
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold text-green-400 mb-4">📊 Data Processing</h3>
+                <div class="space-y-3">
+                    <div class="bg-red-600/20 border border-red-500/30 rounded-lg p-3">
+                        <div class="text-white font-semibold">PDF/DOCX Input</div>
+                        <div class="text-gray-300 text-sm">utils.py extraction</div>
+                    </div>
+                    <div class="text-center text-gray-400">↓</div>
+                    <div class="bg-blue-600/20 border border-blue-500/30 rounded-lg p-3">
+                        <div class="text-white font-semibold">Gemini AI</div>
+                        <div class="text-gray-300 text-sm">Analysis & Optimization</div>
+                    </div>
+                    <div class="text-center text-gray-400">↓</div>
+                    <div class="bg-green-600/20 border border-green-500/30 rounded-lg p-3">
+                        <div class="text-white font-semibold">Database Storage</div>
+                        <div class="text-gray-300 text-sm">SQLite/PostgreSQL</div>
+                    </div>
+                    <div class="text-center text-gray-400">↓</div>
+                    <div class="bg-purple-600/20 border border-purple-500/30 rounded-lg p-3">
+                        <div class="text-white font-semibold">PDF Generation</div>
+                        <div class="text-gray-300 text-sm">ReportLab/LaTeX</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- API Flow -->
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold text-pink-400 mb-4">🌐 API Endpoints</h3>
+                <div class="space-y-3">
+                    <div class="bg-cyan-600/20 border border-cyan-500/30 rounded-lg p-3">
+                        <div class="text-white font-semibold">Real-time Search</div>
+                        <div class="text-gray-300 text-sm">/jobs/api/realtime-search/</div>
+                    </div>
+                    <div class="text-center text-gray-400">↓</div>
+                    <div class="bg-orange-600/20 border border-orange-500/30 rounded-lg p-3">
+                        <div class="text-white font-semibold">Job Portals</div>
+                        <div class="text-gray-300 text-sm">Naukri, Indeed, LinkedIn</div>
+                    </div>
+                    <div class="text-center text-gray-400">↓</div>
+                    <div class="bg-teal-600/20 border border-teal-500/30 rounded-lg p-3">
+                        <div class="text-white font-semibold">JSON Response</div>
+                        <div class="text-gray-300 text-sm">Structured job data</div>
+                    </div>
+                    <div class="text-center text-gray-400">↓</div>
+                    <div class="bg-indigo-600/20 border border-indigo-500/30 rounded-lg p-3">
+                        <div class="text-white font-semibold">Frontend Display</div>
+                        <div class="text-gray-300 text-sm">Dynamic job cards</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Technology Stack -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="bg-slate-800/50 backdrop-blur-md rounded-2xl border border-slate-600/30 p-6 text-center">
+            <i class="fab fa-python text-4xl text-blue-400 mb-4"></i>
+            <h3 class="text-lg font-bold text-white mb-2">Backend</h3>
+            <p class="text-gray-300 text-sm">Django 4.2.7<br>Python 3.8+</p>
+        </div>
+        
+        <div class="bg-slate-800/50 backdrop-blur-md rounded-2xl border border-slate-600/30 p-6 text-center">
+            <i class="fas fa-robot text-4xl text-green-400 mb-4"></i>
+            <h3 class="text-lg font-bold text-white mb-2">AI/ML</h3>
+            <p class="text-gray-300 text-sm">Google Gemini<br>NLTK, PyPDF2</p>
+        </div>
+        
+        <div class="bg-slate-800/50 backdrop-blur-md rounded-2xl border border-slate-600/30 p-6 text-center">
+            <i class="fab fa-html5 text-4xl text-orange-400 mb-4"></i>
+            <h3 class="text-lg font-bold text-white mb-2">Frontend</h3>
+            <p class="text-gray-300 text-sm">Tailwind CSS<br>JavaScript ES6+</p>
+        </div>
+        
+        <div class="bg-slate-800/50 backdrop-blur-md rounded-2xl border border-slate-600/30 p-6 text-center">
+            <i class="fas fa-database text-4xl text-purple-400 mb-4"></i>
+            <h3 class="text-lg font-bold text-white mb-2">Database</h3>
+            <p class="text-gray-300 text-sm">SQLite<br>PostgreSQL Ready</p>
+        </div>
+    </div>
+
+    <!-- Quick Start Guide -->
+    <div class="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-2xl p-6">
+        <h2 class="text-2xl font-bold text-white mb-4 flex items-center">
+            <i class="fas fa-rocket mr-3 text-yellow-400"></i>Quick Start Guide
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-black/30 rounded-lg p-4">
+                <h3 class="text-lg font-bold text-green-400 mb-3">1. Clone & Setup</h3>
+                <div class="bg-gray-900 rounded p-3 font-mono text-sm text-gray-300">
+                    git clone &lt;repo-url&gt;<br>
+                    cd "MINOR PROJECT"<br>
+                    python start.py
+                </div>
+            </div>
+            
+            <div class="bg-black/30 rounded-lg p-4">
+                <h3 class="text-lg font-bold text-blue-400 mb-3">2. Access Points</h3>
+                <div class="space-y-2 text-sm">
+                    <div class="text-gray-300">🏠 Main: <span class="text-blue-400">localhost:8000</span></div>
+                    <div class="text-gray-300">👑 Admin: <span class="text-green-400">localhost:8000/admin</span></div>
+                    <div class="text-gray-300">📊 Flow: <span class="text-purple-400">localhost:8000/flowchart</span></div>
+                </div>
+            </div>
+            
+            <div class="bg-black/30 rounded-lg p-4">
+                <h3 class="text-lg font-bold text-purple-400 mb-3">3. Features</h3>
+                <div class="space-y-2 text-sm text-gray-300">
+                    <div>✅ AI CV Analysis</div>
+                    <div>✅ Real-time Job Search</div>
+                    <div>✅ PDF Generation</div>
+                    <div>✅ LaTeX Editor</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
