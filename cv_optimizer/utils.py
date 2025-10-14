@@ -5,6 +5,7 @@ from collections import Counter
 from PyPDF2 import PdfReader
 from docx import Document
 import json
+import html
 
 # Download required NLTK data
 try:
@@ -299,40 +300,153 @@ def generate_cv_pdf(created_cv):
     doc.build(story)
     return f'created_cvs/{filename}'
 
+def clean_html_content(text):
+    """Clean and sanitize HTML content for ReportLab"""
+    import html
+    import re
+    
+    # Decode HTML entities
+    text = html.unescape(text)
+    
+    # Remove or fix malformed HTML tags
+    text = re.sub(r'<para>|</para>', '', text)
+    text = re.sub(r'<b><b>', '<b>', text)
+    text = re.sub(r'</b></b>', '</b>', text)
+    text = re.sub(r'<b>([^<]*)<b>', r'<b>\1</b>', text)
+    
+    # Fix unclosed bold tags
+    text = re.sub(r'<b>([^<]*?)(?=<b>|$)', r'<b>\1</b>', text)
+    
+    # Remove any remaining malformed tags
+    text = re.sub(r'<(?!/?[bi]>)[^>]*>', '', text)
+    
+    return text
+
 def create_pdf_from_text(text_content):
-    """Create PDF from text content"""
-    from reportlab.pdfgen import canvas
+    """Create professionally formatted PDF from text content"""
     from reportlab.lib.pagesizes import letter
-    from reportlab.lib.utils import simpleSplit
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import inch
+    from reportlab.lib import colors
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY
     from io import BytesIO
+    import re
     
     buffer = BytesIO()
-    p = canvas.Canvas(buffer, pagesize=letter)
-    width, height = letter
+    doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=0.5*inch, bottomMargin=0.5*inch)
+    styles = getSampleStyleSheet()
+    story = []
     
-    # Set up text
-    y_position = height - 50
-    line_height = 14
-    margin = 50
+    # Custom styles
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=18,
+        spaceAfter=6,
+        alignment=TA_CENTER,
+        textColor=colors.darkblue,
+        fontName='Helvetica-Bold'
+    )
     
+    heading_style = ParagraphStyle(
+        'CustomHeading',
+        parent=styles['Heading2'],
+        fontSize=14,
+        spaceBefore=12,
+        spaceAfter=6,
+        textColor=colors.darkblue,
+        fontName='Helvetica-Bold'
+    )
+    
+    contact_style = ParagraphStyle(
+        'ContactStyle',
+        parent=styles['Normal'],
+        fontSize=10,
+        alignment=TA_CENTER,
+        spaceAfter=12
+    )
+    
+    body_style = ParagraphStyle(
+        'BodyStyle',
+        parent=styles['Normal'],
+        fontSize=11,
+        alignment=TA_JUSTIFY,
+        spaceAfter=6
+    )
+    
+    # Clean the content first
+    text_content = clean_html_content(text_content)
+    
+    # Parse content
     lines = text_content.split('\n')
+    name_added = False
     
     for line in lines:
-        if y_position < 50:  # Start new page
-            p.showPage()
-            y_position = height - 50
-        
-        # Wrap long lines
-        wrapped_lines = simpleSplit(line, 'Helvetica', 10, width - 2*margin)
-        
-        for wrapped_line in wrapped_lines:
-            if y_position < 50:
-                p.showPage()
-                y_position = height - 50
+        line = line.strip()
+        if not line:
+            continue
             
-            p.drawString(margin, y_position, wrapped_line)
-            y_position -= line_height
+        try:
+            # Name (first bold text)
+            if line.startswith('**') and line.endswith('**') and not name_added:
+                name = line.replace('**', '')
+                story.append(Paragraph(name, title_style))
+                name_added = True
+                
+            # Contact info (contains email or phone)
+            elif '@' in line or '+91' in line or 'linkedin' in line or 'www.' in line:
+                clean_line = clean_html_content(line)
+                story.append(Paragraph(clean_line, contact_style))
+                story.append(Spacer(1, 0.2*inch))
+                
+            # Section headers (bold text)
+            elif line.startswith('**') and line.endswith('**'):
+                section_title = line.replace('**', '')
+                story.append(Paragraph(section_title, heading_style))
+                
+            # Project/Job titles with dates
+            elif '**' in line and '|' in line:
+                # Split title and date
+                parts = line.split('|')
+                title_part = parts[0].replace('**', '').strip()
+                date_part = parts[1].strip() if len(parts) > 1 else ''
+                
+                story.append(Paragraph(f'<b>{title_part}</b> | {date_part}', body_style))
+                
+            # Italic text (project type, etc.)
+            elif line.startswith('*') and line.endswith('*') and not line.startswith('* '):
+                italic_text = line.replace('*', '')
+                story.append(Paragraph(f'<i>{italic_text}</i>', body_style))
+                
+            # Bullet points
+            elif line.startswith('* ') or line.startswith('• '):
+                bullet_text = line[2:].strip()
+                # Clean and sanitize bullet text
+                bullet_text = clean_html_content(bullet_text)
+                # Convert markdown bold to HTML
+                bullet_text = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', bullet_text)
+                story.append(Paragraph(f'• {bullet_text}', body_style))
+                
+            # Tech stack or special formatting
+            elif line.startswith('* **Tech Stack:**'):
+                tech_text = line.replace('* **Tech Stack:**', '').strip()
+                tech_text = clean_html_content(tech_text)
+                story.append(Paragraph(f'<b>Tech Stack:</b> {tech_text}', body_style))
+                
+            # Regular paragraphs
+            else:
+                # Clean up formatting
+                clean_line = clean_html_content(line)
+                # Convert markdown bold to HTML
+                clean_line = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', clean_line)
+                story.append(Paragraph(clean_line, body_style))
+                
+        except Exception as e:
+            # If there's an error with a specific line, add it as plain text
+            plain_text = re.sub(r'<[^>]*>', '', line)
+            story.append(Paragraph(plain_text, body_style))
     
-    p.save()
+    doc.build(story)
     buffer.seek(0)
     return buffer.getvalue()

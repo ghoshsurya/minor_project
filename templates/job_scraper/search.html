@@ -15,9 +15,9 @@
     <div class="bg-gray-800 shadow-xl rounded-lg mb-8">
         <div class="p-6">
             <form method="get" class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                <div class="md:col-span-2">
-                    <input type="text" name="q" id="job-search-input" placeholder="Search jobs, companies, or keywords..." class="w-full px-4 py-3 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500" value="{{ request.GET.q }}">
-                    <div id="search-suggestions" class="absolute z-10 w-full bg-white border border-gray-300 rounded-lg shadow-lg mt-1 hidden"></div>
+                <div class="md:col-span-2 relative">
+                    <input type="text" name="q" id="job-search-input" placeholder="Search jobs, companies, or keywords..." class="w-full px-4 py-3 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500" value="{{ request.GET.q }}" autocomplete="off">
+                    <div id="search-suggestions" class="absolute z-10 w-full bg-gray-800 border border-gray-600 rounded-lg shadow-lg mt-1 hidden max-h-60 overflow-y-auto"></div>
                 </div>
                 <div>
                     <input type="text" name="location" id="location-input" placeholder="Location" class="w-full px-4 py-3 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500" value="{{ request.GET.location }}">
@@ -307,19 +307,93 @@ function loadSavedJobs() {
     }
 }
 
-// Real-time job search functionality
+// Real-time search functionality
 let searchTimeout;
+let suggestionsTimeout;
+const searchInput = document.getElementById('job-search-input');
+const suggestionsContainer = document.getElementById('search-suggestions');
 
-document.getElementById('job-search-input').addEventListener('input', function() {
-    clearTimeout(searchTimeout);
+// Popular job search terms
+const popularSearches = [
+    'Software Developer', 'Data Scientist', 'Product Manager', 'UI/UX Designer',
+    'DevOps Engineer', 'Full Stack Developer', 'Business Analyst', 'Marketing Manager',
+    'Sales Executive', 'HR Manager', 'Content Writer', 'Digital Marketing',
+    'Python Developer', 'Java Developer', 'React Developer', 'Node.js Developer'
+];
+
+searchInput.addEventListener('input', function() {
     const query = this.value.trim();
     
-    if (query.length > 2) {
+    clearTimeout(searchTimeout);
+    clearTimeout(suggestionsTimeout);
+    
+    if (query.length === 0) {
+        hideSuggestions();
+        return;
+    }
+    
+    if (query.length >= 1) {
+        suggestionsTimeout = setTimeout(() => {
+            showSuggestions(query);
+        }, 200);
+    }
+    
+    if (query.length >= 3) {
         searchTimeout = setTimeout(() => {
             performRealTimeSearch(query);
-        }, 500);
+        }, 800);
     }
 });
+
+searchInput.addEventListener('focus', function() {
+    if (this.value.trim().length >= 1) {
+        showSuggestions(this.value.trim());
+    }
+});
+
+document.addEventListener('click', function(e) {
+    if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+        hideSuggestions();
+    }
+});
+
+function showSuggestions(query) {
+    const filtered = popularSearches.filter(term => 
+        term.toLowerCase().includes(query.toLowerCase())
+    ).slice(0, 8);
+    
+    if (filtered.length === 0) {
+        hideSuggestions();
+        return;
+    }
+    
+    let suggestionsHtml = '';
+    filtered.forEach(suggestion => {
+        const highlighted = suggestion.replace(
+            new RegExp(query, 'gi'), 
+            `<span class="text-blue-400 font-semibold">$&</span>`
+        );
+        suggestionsHtml += `
+            <div class="px-4 py-3 hover:bg-gray-700 cursor-pointer border-b border-gray-600 last:border-b-0 text-white" 
+                 onclick="selectSuggestion('${suggestion}')">
+                <i class="fas fa-search mr-2 text-gray-400"></i>${highlighted}
+            </div>
+        `;
+    });
+    
+    suggestionsContainer.innerHTML = suggestionsHtml;
+    suggestionsContainer.classList.remove('hidden');
+}
+
+function hideSuggestions() {
+    suggestionsContainer.classList.add('hidden');
+}
+
+function selectSuggestion(suggestion) {
+    searchInput.value = suggestion;
+    hideSuggestions();
+    performRealTimeSearch(suggestion);
+}
 
 function performRealTimeSearch(query) {
     const location = document.getElementById('location-input').value;
@@ -332,25 +406,37 @@ function performRealTimeSearch(query) {
     searchSpinner.classList.remove('hidden');
     searchBtn.disabled = true;
     
-    fetch(`/jobs/api/search/?q=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}`)
+    // Hide suggestions during search
+    hideSuggestions();
+    
+    fetch(`/jobs/api/realtime-search/?q=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}`)
         .then(response => response.json())
         .then(data => {
-            if (data.jobs && data.jobs.length > 0) {
-                // Update job count
-                document.querySelector('h5').textContent = `${data.count} Fresh Jobs Found`;
+            if (data.jobs_by_portal) {
+                // Move current jobs to history
+                moveJobsToHistory();
+                
+                // Update portal columns
+                updatePortalColumns(data.jobs_by_portal);
+                
+                // Update total count
+                const totalCount = Object.values(data.jobs_by_portal).reduce((sum, jobs) => sum + jobs.length, 0);
+                document.querySelector('h5').textContent = `${totalCount} Live Jobs Found`;
                 
                 // Show success message
-                showNotification(`Found ${data.count} fresh jobs from multiple portals!`, 'success');
-                
-                // Update jobs list dynamically
+                showNotification(`Found ${totalCount} real-time jobs for "${query}"`, 'success');
+            } else if (data.jobs && data.jobs.length > 0) {
+                // Fallback for old API format
                 updateJobsList(data.jobs);
+                document.querySelector('h5').textContent = `${data.jobs.length} Jobs Found`;
+                showNotification(`Found ${data.jobs.length} jobs for "${query}"`, 'success');
             } else {
-                showNotification('No new jobs found. Try different keywords.', 'info');
+                showNotification('No jobs found. Try different keywords.', 'info');
             }
         })
         .catch(error => {
             console.error('Search error:', error);
-            showNotification('Error searching jobs. Please try again.', 'error');
+            showNotification('Search failed. Please try again.', 'error');
         })
         .finally(() => {
             // Reset loading state
@@ -457,7 +543,7 @@ function performActualRefresh() {
     
     console.log('Starting API call with:', query, location);
     
-    fetch(`/jobs/api/search/?q=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}`)
+    fetch(`/jobs/api/realtime-search/?q=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}`)
         .then(response => {
             console.log('Response status:', response.status);
             return response.json();
@@ -474,7 +560,7 @@ function performActualRefresh() {
                 // Update total count
                 document.querySelector('h5').textContent = `${data.total_count} Fresh Jobs Found`;
                 
-                showNotification(`Found ${data.total_count} fresh jobs from all portals!`, 'success');
+                showNotification(`Found ${data.total_count} real-time jobs from all portals!`, 'success');
             } else {
                 console.error('No jobs_by_portal in response');
                 showNotification('No jobs found in response', 'error');

@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from .api_views import RealTimeJobSearchAPI
 
 app_name = 'job_scraper'
 
@@ -10,7 +11,6 @@ urlpatterns = [
     path('alerts/create/', views.CreateJobAlertView.as_view(), name='create_alert'),
     path('alerts/<int:alert_id>/edit/', views.EditJobAlertView.as_view(), name='edit_alert'),
     path('alerts/<int:alert_id>/delete/', views.DeleteJobAlertView.as_view(), name='delete_alert'),
-    path('api/search/', views.RealTimeJobSearchView.as_view(), name='api_search'),
+    path('api/realtime-search/', RealTimeJobSearchAPI.as_view(), name='realtime_search'),
     path('scrape/', views.ScrapeJobsView.as_view(), name='scrape'),
-    path('api/search/', views.RealTimeJobSearchView.as_view(), name='api_search'),
 ]

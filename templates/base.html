@@ -37,6 +37,21 @@
             color: #ffffff !important;
         }
         
+        .dark-theme nav a,
+        .dark-theme nav button {
+            color: #ffffff !important;
+        }
+        
+        .dark-theme .group .absolute {
+            background: #1a1a1a !important;
+            border-color: #333333 !important;
+            color: #ffffff !important;
+        }
+        
+        .dark-theme .group .absolute a {
+            color: #ffffff !important;
+        }
+        
         .dark-theme footer {
             background: linear-gradient(135deg, #000000 0%, #0d0d0d 100%) !important;
             color: #ffffff !important;
@@ -230,6 +245,31 @@
                 link.onmouseout = () => link.style.color = '#000000';
             }
         });
+        
+        // Update profile dropdown
+        const profileButton = document.querySelector('.group button');
+        const profileDropdown = document.querySelector('.group .absolute');
+        if (profileButton && profileDropdown) {
+            if (isDark) {
+                profileButton.style.color = '#ffffff';
+                profileDropdown.style.background = '#1a1a1a';
+                profileDropdown.style.borderColor = '#333333';
+                profileDropdown.style.color = '#ffffff';
+                const dropdownLinks = profileDropdown.querySelectorAll('a');
+                dropdownLinks.forEach(link => {
+                    link.style.color = '#ffffff';
+                });
+            } else {
+                profileButton.style.color = '#000000';
+                profileDropdown.style.background = '#ffffff';
+                profileDropdown.style.borderColor = '#e5e7eb';
+                profileDropdown.style.color = '#000000';
+                const dropdownLinks = profileDropdown.querySelectorAll('a');
+                dropdownLinks.forEach(link => {
+                    link.style.color = '#000000';
+                });
+            }
+        }
         
         // Update footer
         const footer = document.querySelector('footer');
