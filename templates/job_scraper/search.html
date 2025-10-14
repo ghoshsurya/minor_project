@@ -16,10 +16,11 @@
         <div class="p-6">
             <form method="get" class="grid grid-cols-1 md:grid-cols-5 gap-4">
                 <div class="md:col-span-2">
-                    <input type="text" name="q" placeholder="Search jobs, companies, or keywords..." class="w-full px-4 py-3 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500" value="{{ request.GET.q }}">
+                    <input type="text" name="q" id="job-search-input" placeholder="Search jobs, companies, or keywords..." class="w-full px-4 py-3 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500" value="{{ request.GET.q }}">
+                    <div id="search-suggestions" class="absolute z-10 w-full bg-white border border-gray-300 rounded-lg shadow-lg mt-1 hidden"></div>
                 </div>
                 <div>
-                    <input type="text" name="location" placeholder="Location" class="w-full px-4 py-3 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500" value="{{ request.GET.location }}">
+                    <input type="text" name="location" id="location-input" placeholder="Location" class="w-full px-4 py-3 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500" value="{{ request.GET.location }}">
                 </div>
                 <div>
                     <select name="job_type" class="w-full px-4 py-3 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500">
@@ -31,8 +32,9 @@
                     </select>
                 </div>
                 <div>
-                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg">
-                        <i class="fas fa-search"></i> Search
+                    <button type="submit" id="search-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg">
+                        <i class="fas fa-search"></i> <span id="search-text">Search</span>
+                        <i class="fas fa-spinner fa-spin hidden" id="search-spinner"></i>
                     </button>
                 </div>
             </form>
@@ -41,39 +43,148 @@
     
     <!-- Results Summary -->
     <div class="flex justify-between items-center mb-8">
-        <h5 class="text-2xl font-bold text-white">{{ total_jobs }} Jobs Found</h5>
+        <div>
+            <h5 class="text-2xl font-bold text-white">{{ total_jobs }} Live Jobs Found</h5>
+            {% if query %}
+            <p class="text-green-400 text-sm">Real-time results for "{{ query }}"{% if location %} in {{ location }}{% endif %}</p>
+            {% endif %}
+        </div>
         <div class="flex space-x-4">
             <a href="{% url 'job_scraper:alerts' %}" class="border border-blue-500 text-blue-400 hover:bg-blue-500 hover:text-white px-4 py-2 rounded transition-colors">
                 <i class="fas fa-bell mr-2"></i>Job Alerts
             </a>
-            {% if user.is_staff %}
-            <form method="post" action="{% url 'job_scraper:scrape' %}" class="inline">
-                {% csrf_token %}
-                <button type="submit" class="border border-green-500 text-green-400 hover:bg-green-500 hover:text-white px-4 py-2 rounded transition-colors">
-                    <i class="fas fa-sync mr-2"></i>Refresh Jobs
-                </button>
-            </form>
-            {% endif %}
+            <button onclick="refreshJobs()" id="refresh-btn" class="border border-green-500 text-green-400 hover:bg-green-500 hover:text-white px-4 py-2 rounded transition-colors">
+                <i class="fas fa-sync mr-2" id="refresh-icon"></i><span id="refresh-text">Refresh Jobs</span>
+            </button>
         </div>
     </div>
     
-    <!-- Job Listings -->
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        <div class="lg:col-span-3">
+    <!-- Progress Bars -->
+    <div id="progress-section" class="hidden mb-8">
+        <h3 class="text-xl font-bold text-white mb-4">Scraping Progress</h3>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="bg-slate-800/50 p-4 rounded-xl">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-white font-semibold">Naukri.com</span>
+                    <span id="naukri-status" class="text-yellow-400">Waiting...</span>
+                </div>
+                <div class="w-full bg-gray-700 rounded-full h-2">
+                    <div id="naukri-progress" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="bg-slate-800/50 p-4 rounded-xl">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-white font-semibold">Indeed.com</span>
+                    <span id="indeed-status" class="text-yellow-400">Waiting...</span>
+                </div>
+                <div class="w-full bg-gray-700 rounded-full h-2">
+                    <div id="indeed-progress" class="bg-green-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="bg-slate-800/50 p-4 rounded-xl">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-white font-semibold">LinkedIn</span>
+                    <span id="linkedin-status" class="text-yellow-400">Waiting...</span>
+                </div>
+                <div class="w-full bg-gray-700 rounded-full h-2">
+                    <div id="linkedin-progress" class="bg-purple-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="bg-slate-800/50 p-4 rounded-xl">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-white font-semibold">Monster.com</span>
+                    <span id="monster-status" class="text-yellow-400">Waiting...</span>
+                </div>
+                <div class="w-full bg-gray-700 rounded-full h-2">
+                    <div id="monster-progress" class="bg-red-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4-Column Job Layout -->
+    <div id="jobs-container" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-slate-800/50 backdrop-blur-md rounded-2xl border border-slate-600/30">
+            <div class="bg-blue-600 text-white p-4 rounded-t-2xl">
+                <h3 class="font-bold flex items-center">
+                    <i class="fas fa-briefcase mr-2"></i>Naukri.com
+                    <span id="naukri-count" class="ml-auto bg-blue-800 px-2 py-1 rounded-full text-xs">0</span>
+                </h3>
+            </div>
+            <div id="naukri-jobs" class="p-4 space-y-4 max-h-96 overflow-y-auto">
+                <p class="text-gray-400 text-center py-8">Click refresh to load jobs</p>
+            </div>
+        </div>
+        
+        <div class="bg-slate-800/50 backdrop-blur-md rounded-2xl border border-slate-600/30">
+            <div class="bg-green-600 text-white p-4 rounded-t-2xl">
+                <h3 class="font-bold flex items-center">
+                    <i class="fas fa-search mr-2"></i>Indeed.com
+                    <span id="indeed-count" class="ml-auto bg-green-800 px-2 py-1 rounded-full text-xs">0</span>
+                </h3>
+            </div>
+            <div id="indeed-jobs" class="p-4 space-y-4 max-h-96 overflow-y-auto">
+                <p class="text-gray-400 text-center py-8">Click refresh to load jobs</p>
+            </div>
+        </div>
+        
+        <div class="bg-slate-800/50 backdrop-blur-md rounded-2xl border border-slate-600/30">
+            <div class="bg-purple-600 text-white p-4 rounded-t-2xl">
+                <h3 class="font-bold flex items-center">
+                    <i class="fab fa-linkedin mr-2"></i>LinkedIn
+                    <span id="linkedin-count" class="ml-auto bg-purple-800 px-2 py-1 rounded-full text-xs">0</span>
+                </h3>
+            </div>
+            <div id="linkedin-jobs" class="p-4 space-y-4 max-h-96 overflow-y-auto">
+                <p class="text-gray-400 text-center py-8">Click refresh to load jobs</p>
+            </div>
+        </div>
+        
+        <div class="bg-slate-800/50 backdrop-blur-md rounded-2xl border border-slate-600/30">
+            <div class="bg-red-600 text-white p-4 rounded-t-2xl">
+                <h3 class="font-bold flex items-center">
+                    <i class="fas fa-monster mr-2"></i>Monster.com
+                    <span id="monster-count" class="ml-auto bg-red-800 px-2 py-1 rounded-full text-xs">0</span>
+                </h3>
+            </div>
+            <div id="monster-jobs" class="p-4 space-y-4 max-h-96 overflow-y-auto">
+                <p class="text-gray-400 text-center py-8">Click refresh to load jobs</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Section -->
+    <div class="bg-slate-800/50 backdrop-blur-md rounded-2xl border border-slate-600/30 mb-8">
+        <div class="p-4 border-b border-slate-600/30">
+            <h3 class="text-xl font-bold text-white flex items-center">
+                <i class="fas fa-history mr-2"></i>Previous Jobs History
+                <span id="history-count" class="ml-auto bg-slate-600 px-3 py-1 rounded-full text-sm">0</span>
+            </h3>
+        </div>
+        <div id="history-jobs" class="p-4">
+            <p class="text-gray-400 text-center py-8">No previous jobs in history</p>
+        </div>
+    </div>
+            
+            <!-- Legacy Job List (Hidden) -->
+            <div id="legacy-jobs" class="hidden">
             {% for job in jobs %}
-            <div class="bg-gray-800 p-6 rounded-lg border-l-4 border-blue-500 mb-6 hover:bg-gray-750 transition-colors">
+            <div class="bg-slate-800/50 backdrop-blur-md p-6 rounded-2xl border-l-4 border-blue-500 mb-6 hover:bg-slate-700/50 transition-all duration-300 border border-slate-600/30">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="md:col-span-2">
                         <h5 class="text-xl font-bold mb-3 text-white">
                             <a href="{% url 'job_scraper:detail' job.id %}" class="hover:text-blue-400">
                                 {{ job.title }}
                             </a>
+                            <span class="bg-green-600 text-white px-2 py-1 rounded-full text-xs ml-2 animate-pulse">LIVE</span>
                         </h5>
                         <p class="text-blue-400 font-semibold mb-3">{{ job.company }}</p>
                         <p class="text-gray-300 mb-4">
-                            <i class="fas fa-map-marker-alt mr-2"></i>{{ job.location }}
+                            <i class="fas fa-map-marker-alt mr-2 text-red-400"></i>{{ job.location }}
                             <span class="mx-3">•</span>
-                            <i class="fas fa-briefcase mr-2"></i>{{ job.job_type|title }}
+                            <i class="fas fa-briefcase mr-2 text-blue-400"></i>{{ job.job_type|title }}
+                            <span class="mx-3">•</span>
+                            <i class="fas fa-globe mr-2 text-green-400"></i>{{ job.portal }}
                         </p>
                         <p class="text-gray-300 mb-4">{{ job.description|truncatewords:25 }}</p>
                         <div class="flex flex-wrap gap-2">
@@ -84,9 +195,12 @@
                         </div>
                     </div>
                     <div class="text-right">
-                        <small class="text-gray-400 block mb-4">{{ job.posted_date|timesince }} ago</small>
-                        <a href="{{ job.job_url }}" target="_blank" class="block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded mb-2 text-center">
-                            <i class="fas fa-external-link-alt mr-2"></i>Apply Now
+                        <div class="mb-4">
+                            <small class="text-gray-400 block">{{ job.posted_date|timesince }} ago</small>
+                            <small class="text-green-400 block font-semibold">{{ job.portal }}</small>
+                        </div>
+                        <a href="{{ job.job_url }}" target="_blank" class="block bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded mb-2 text-center font-semibold transition-all duration-300 transform hover:scale-105">
+                            <i class="fas fa-external-link-alt mr-2"></i>Apply on {{ job.portal }}
                         </a>
                         <a href="{% url 'job_scraper:detail' job.id %}" class="block border border-blue-500 text-blue-400 hover:bg-blue-500 hover:text-white px-4 py-2 rounded text-center">
                             View Details
@@ -101,6 +215,7 @@
                 <p class="text-gray-300">Try adjusting your search criteria</p>
             </div>
             {% endfor %}
+            </div>
             
             <!-- Pagination -->
             {% if is_paginated %}
@@ -168,4 +283,303 @@
         </div>
     </div>
 </div>
+
+<script>
+// Load saved jobs on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadSavedJobs();
+});
+
+function loadSavedJobs() {
+    const savedJobs = localStorage.getItem('jobsByPortal');
+    const timestamp = localStorage.getItem('jobsTimestamp');
+    
+    if (savedJobs && timestamp) {
+        const jobsAge = Date.now() - parseInt(timestamp);
+        // Load jobs if less than 1 hour old
+        if (jobsAge < 3600000) {
+            const jobsByPortal = JSON.parse(savedJobs);
+            updatePortalColumns(jobsByPortal);
+            
+            const totalCount = Object.values(jobsByPortal).reduce((sum, jobs) => sum + jobs.length, 0);
+            document.querySelector('h5').textContent = `${totalCount} Saved Jobs Found`;
+        }
+    }
+}
+
+// Real-time job search functionality
+let searchTimeout;
+
+document.getElementById('job-search-input').addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    const query = this.value.trim();
+    
+    if (query.length > 2) {
+        searchTimeout = setTimeout(() => {
+            performRealTimeSearch(query);
+        }, 500);
+    }
+});
+
+function performRealTimeSearch(query) {
+    const location = document.getElementById('location-input').value;
+    const searchBtn = document.getElementById('search-btn');
+    const searchText = document.getElementById('search-text');
+    const searchSpinner = document.getElementById('search-spinner');
+    
+    // Show loading state
+    searchText.textContent = 'Searching...';
+    searchSpinner.classList.remove('hidden');
+    searchBtn.disabled = true;
+    
+    fetch(`/jobs/api/search/?q=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.jobs && data.jobs.length > 0) {
+                // Update job count
+                document.querySelector('h5').textContent = `${data.count} Fresh Jobs Found`;
+                
+                // Show success message
+                showNotification(`Found ${data.count} fresh jobs from multiple portals!`, 'success');
+                
+                // Update jobs list dynamically
+                updateJobsList(data.jobs);
+            } else {
+                showNotification('No new jobs found. Try different keywords.', 'info');
+            }
+        })
+        .catch(error => {
+            console.error('Search error:', error);
+            showNotification('Error searching jobs. Please try again.', 'error');
+        })
+        .finally(() => {
+            // Reset loading state
+            searchText.textContent = 'Search';
+            searchSpinner.classList.add('hidden');
+            searchBtn.disabled = false;
+        });
+}
+
+function updateJobsList(jobs) {
+    const jobsContainer = document.querySelector('.lg\\:col-span-3');
+    let jobsHtml = '';
+    
+    jobs.forEach(job => {
+        jobsHtml += `
+            <div class="bg-gray-800 p-6 rounded-lg border-l-4 border-green-500 mb-6 hover:bg-gray-750 transition-colors">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="md:col-span-2">
+                        <h5 class="text-xl font-bold mb-3 text-white">
+                            <span class="hover:text-blue-400">${job.title}</span>
+                            <span class="bg-green-600 text-white px-2 py-1 rounded text-xs ml-2">FRESH</span>
+                        </h5>
+                        <p class="text-blue-400 font-semibold mb-3">${job.company}</p>
+                        <p class="text-gray-300 mb-4">
+                            <i class="fas fa-map-marker-alt mr-2"></i>${job.location}
+                            <span class="mx-3">•</span>
+                            <i class="fas fa-briefcase mr-2"></i>Full Time
+                            <span class="mx-3">•</span>
+                            <i class="fas fa-globe mr-2"></i>${job.portal}
+                        </p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-gray-600 text-white px-3 py-1 rounded-full text-sm">${job.experience}</span>
+                            <span class="bg-green-600 text-white px-3 py-1 rounded-full text-sm">${job.salary}</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <small class="text-gray-400 block mb-4">Just now</small>
+                        <a href="${job.url}" target="_blank" class="block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded mb-2 text-center">
+                            <i class="fas fa-external-link-alt mr-2"></i>Apply Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    jobsContainer.innerHTML = jobsHtml;
+}
+
+function refreshJobs() {
+    const refreshBtn = document.getElementById('refresh-btn');
+    const refreshIcon = document.getElementById('refresh-icon');
+    const refreshText = document.getElementById('refresh-text');
+    const progressSection = document.getElementById('progress-section');
+    
+    // Show progress section
+    progressSection.classList.remove('hidden');
+    
+    // Reset progress bars
+    const portals = ['naukri', 'indeed', 'linkedin', 'monster'];
+    portals.forEach(portal => {
+        document.getElementById(`${portal}-progress`).style.width = '0%';
+        document.getElementById(`${portal}-status`).textContent = 'Starting...';
+        document.getElementById(`${portal}-status`).className = 'text-yellow-400';
+    });
+    
+    // Show loading state
+    refreshIcon.classList.add('fa-spin');
+    refreshText.textContent = 'Scraping...';
+    refreshBtn.disabled = true;
+    
+    // Simulate progress for each portal
+    let currentPortal = 0;
+    const progressInterval = setInterval(() => {
+        if (currentPortal < portals.length) {
+            const portal = portals[currentPortal];
+            document.getElementById(`${portal}-status`).textContent = 'Scraping...';
+            document.getElementById(`${portal}-status`).className = 'text-blue-400';
+            
+            // Animate progress
+            let progress = 0;
+            const portalProgress = setInterval(() => {
+                progress += 10;
+                document.getElementById(`${portal}-progress`).style.width = progress + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(portalProgress);
+                    document.getElementById(`${portal}-status`).textContent = 'Complete';
+                    document.getElementById(`${portal}-status`).className = 'text-green-400';
+                    currentPortal++;
+                }
+            }, 200);
+        } else {
+            clearInterval(progressInterval);
+            // Start actual API call
+            performActualRefresh();
+        }
+    }, 2000);
+}
+
+function performActualRefresh() {
+    const query = document.getElementById('job-search-input').value || 'developer';
+    const location = document.getElementById('location-input').value || 'bangalore';
+    
+    console.log('Starting API call with:', query, location);
+    
+    fetch(`/jobs/api/search/?q=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}`)
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('API Response:', data);
+            if (data.jobs_by_portal) {
+                // Move current jobs to history
+                moveJobsToHistory();
+                
+                // Update portal columns
+                updatePortalColumns(data.jobs_by_portal);
+                
+                // Update total count
+                document.querySelector('h5').textContent = `${data.total_count} Fresh Jobs Found`;
+                
+                showNotification(`Found ${data.total_count} fresh jobs from all portals!`, 'success');
+            } else {
+                console.error('No jobs_by_portal in response');
+                showNotification('No jobs found in response', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+            showNotification('Error refreshing jobs. Please try again.', 'error');
+        })
+        .finally(() => {
+            // Hide progress section after delay
+            setTimeout(() => {
+                document.getElementById('progress-section').classList.add('hidden');
+            }, 2000);
+            
+            // Reset loading state
+            document.getElementById('refresh-icon').classList.remove('fa-spin');
+            document.getElementById('refresh-text').textContent = 'Refresh Jobs';
+            document.getElementById('refresh-btn').disabled = false;
+        });
+}
+
+function updatePortalColumns(jobsByPortal) {
+    const portals = ['naukri', 'indeed', 'linkedin', 'monster'];
+    
+    // Save to localStorage
+    localStorage.setItem('jobsByPortal', JSON.stringify(jobsByPortal));
+    localStorage.setItem('jobsTimestamp', Date.now());
+    
+    portals.forEach(portal => {
+        const jobs = jobsByPortal[portal] || [];
+        const container = document.getElementById(`${portal}-jobs`);
+        const countElement = document.getElementById(`${portal}-count`);
+        
+        countElement.textContent = jobs.length;
+        
+        if (jobs.length === 0) {
+            container.innerHTML = '<p class="text-gray-400 text-center py-8">No jobs found</p>';
+            return;
+        }
+        
+        let jobsHtml = '';
+        jobs.forEach(job => {
+            jobsHtml += `
+                <div class="bg-slate-700 bg-opacity-50 p-3 rounded-lg border border-slate-600 border-opacity-30 hover:bg-slate-600 hover:bg-opacity-50 transition-all">
+                    <h6 class="text-white font-semibold text-sm mb-2 line-clamp-2">${job.title}</h6>
+                    <p class="text-blue-400 text-xs mb-2">${job.company}</p>
+                    <p class="text-gray-300 text-xs mb-2">
+                        <i class="fas fa-map-marker-alt mr-1"></i>${job.location}
+                    </p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-green-400 text-xs">${job.posted}</span>
+                        <a href="${job.url}" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs">
+                            Apply
+                        </a>
+                    </div>
+                </div>
+            `;
+        });
+        
+        container.innerHTML = jobsHtml;
+    });
+}
+
+function moveJobsToHistory() {
+    const portals = ['naukri', 'indeed', 'linkedin', 'monster'];
+    const historyContainer = document.getElementById('history-jobs');
+    const historyCount = document.getElementById('history-count');
+    
+    let historyJobs = [];
+    
+    portals.forEach(portal => {
+        const container = document.getElementById(`${portal}-jobs`);
+        const jobs = container.querySelectorAll('div[class*="bg-slate-700"]');
+        
+        jobs.forEach(job => {
+            const clonedJob = job.cloneNode(true);
+            clonedJob.classList.add('opacity-75');
+            historyJobs.push(clonedJob.outerHTML);
+        });
+    });
+    
+    if (historyJobs.length > 0) {
+        historyContainer.innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                ${historyJobs.slice(0, 20).join('')}
+            </div>
+        `;
+        historyCount.textContent = historyJobs.length;
+    }
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-20 right-4 z-50 p-4 rounded-lg shadow-lg ${
+        type === 'success' ? 'bg-green-600' : 
+        type === 'error' ? 'bg-red-600' : 'bg-blue-600'
+    } text-white`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+</script>
 {% endblock %}

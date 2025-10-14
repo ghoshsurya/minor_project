@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}AI Optimized CV - ATS Optimizer{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-robot me-2"></i>AI-Optimized CV Analysis</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card border-success">
+                                <div class="card-header bg-success text-white">
+                                    <h5><i class="fas fa-chart-line me-2"></i>ATS Score</h5>
+                                </div>
+                                <div class="card-body text-center">
+                                    <div class="display-4 text-success">{{ cv_upload.ats_score }}%</div>
+                                    <div class="progress mt-3">
+                                        <div class="progress-bar bg-success" style="width: {{ cv_upload.ats_score }}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-info">
+                                <div class="card-header bg-info text-white">
+                                    <h5><i class="fas fa-bullseye me-2"></i>Job Match</h5>
+                                </div>
+                                <div class="card-body text-center">
+                                    <div class="display-4 text-info">{{ match_percentage }}%</div>
+                                    <div class="progress mt-3">
+                                        <div class="progress-bar bg-info" style="width: {{ match_percentage }}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-md-4">
+                            <div class="card border-warning">
+                                <div class="card-header bg-warning text-dark">
+                                    <h5><i class="fas fa-exclamation-triangle me-2"></i>Missing Sections</h5>
+                                </div>
+                                <div class="card-body">
+                                    {% if missing_sections %}
+                                        <ul class="list-unstyled">
+                                            {% for section in missing_sections %}
+                                                <li><i class="fas fa-minus-circle text-warning me-2"></i>{{ section }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% else %}
+                                        <p class="text-success"><i class="fas fa-check-circle me-2"></i>All sections present</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-primary">
+                                <div class="card-header bg-primary text-white">
+                                    <h5><i class="fas fa-lightbulb me-2"></i>Improvements</h5>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled">
+                                        {% for improvement in improvements %}
+                                            <li class="mb-2"><i class="fas fa-arrow-right text-primary me-2"></i>{{ improvement }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-secondary">
+                                <div class="card-header bg-secondary text-white">
+                                    <h5><i class="fas fa-tags me-2"></i>Keyword Suggestions</h5>
+                                </div>
+                                <div class="card-body">
+                                    {% for keyword in keywords %}
+                                        <span class="badge bg-secondary me-1 mb-1">{{ keyword }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5><i class="fas fa-file-alt me-2"></i>AI-Optimized CV Content</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="bg-light p-3 rounded" style="max-height: 400px; overflow-y: auto;">
+                                        <pre class="mb-0">{{ optimized_content }}</pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12 text-center">
+                            <a href="{% url 'cv_optimizer:ai_download' cv_upload.id %}" class="btn btn-success btn-lg me-3">
+                                <i class="fas fa-download me-2"></i>Download Optimized CV
+                            </a>
+                            <a href="{% url 'cv_optimizer:job_matching' cv_upload.id %}" class="btn btn-primary btn-lg me-3">
+                                <i class="fas fa-search me-2"></i>Find Matching Jobs
+                            </a>
+                            <button class="btn btn-warning btn-lg" onclick="regenerateAnalysis()">
+                                <i class="fas fa-sync-alt me-2"></i>Regenerate Analysis
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function regenerateAnalysis() {
+    if (confirm('This will regenerate the AI analysis. Continue?')) {
+        fetch(`{% url 'cv_optimizer:regenerate_analysis' cv_upload.id %}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

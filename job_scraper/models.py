@@ -35,8 +35,8 @@ class JobListing(models.Model):
 class UserJobAlert(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     keywords = models.CharField(max_length=200)
-    location = models.CharField(max_length=100)
-    job_type = models.CharField(max_length=50)
+    location = models.CharField(max_length=100, blank=True)
+    job_type = models.CharField(max_length=50, blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     

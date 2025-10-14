@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Build CV - JobLift{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-12">
+    <!-- Header -->
+    <div class="text-center mb-8">
+        <h2 class="text-3xl font-bold text-white mb-2">Build Your CV</h2>
+        <p class="text-gray-300">Using {{ template.name }} template</p>
+    </div>
+    
+    <!-- CV Builder Form -->
+    <div class="bg-gray-800 rounded-xl p-8">
+        <form method="post" class="space-y-8">
+            {% csrf_token %}
+            
+            <!-- Personal Information -->
+            <div class="border-b border-gray-700 pb-8">
+                <h3 class="text-xl font-bold text-white mb-6">Personal Information</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Full Name *</label>
+                        {{ form.full_name }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Email *</label>
+                        {{ form.email }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Phone</label>
+                        {{ form.phone }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">LinkedIn URL</label>
+                        {{ form.linkedin_url }}
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Address</label>
+                        {{ form.address }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Portfolio URL</label>
+                        {{ form.portfolio_url }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Professional Summary -->
+            <div class="border-b border-gray-700 pb-8">
+                <h3 class="text-xl font-bold text-white mb-6">Professional Summary</h3>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Summary</label>
+                    {{ form.professional_summary }}
+                </div>
+            </div>
+            
+            <!-- Experience Section -->
+            <div class="border-b border-gray-700 pb-8">
+                <h3 class="text-xl font-bold text-white mb-6">Work Experience</h3>
+                <div id="experience-section">
+                    <div class="experience-item bg-gray-700 p-6 rounded-lg mb-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <input type="text" placeholder="Job Title" class="w-full px-3 py-2 bg-gray-600 text-white rounded-lg border border-gray-500" name="exp_title_0">
+                            <input type="text" placeholder="Company Name" class="w-full px-3 py-2 bg-gray-600 text-white rounded-lg border border-gray-500" name="exp_company_0">
+                            <input type="text" placeholder="Start Date (e.g., Jan 2020)" class="w-full px-3 py-2 bg-gray-600 text-white rounded-lg border border-gray-500" name="exp_start_0">
+                            <input type="text" placeholder="End Date (e.g., Present)" class="w-full px-3 py-2 bg-gray-600 text-white rounded-lg border border-gray-500" name="exp_end_0">
+                        </div>
+                        <textarea placeholder="Job Description and Achievements" rows="3" class="w-full px-3 py-2 bg-gray-600 text-white rounded-lg border border-gray-500" name="exp_desc_0"></textarea>
+                    </div>
+                </div>
+                <button type="button" onclick="addExperience()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                    <i class="fas fa-plus mr-2"></i>Add Experience
+                </button>
+            </div>
+            
+            <!-- Education Section -->
+            <div class="border-b border-gray-700 pb-8">
+                <h3 class="text-xl font-bold text-white mb-6">Education</h3>
+                <div id="education-section">
+                    <div class="education-item bg-gray-700 p-6 rounded-lg mb-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="text" placeholder="Degree" class="w-full px-3 py-2 bg-gray-600 text-white rounded-lg border border-gray-500" name="edu_degree_0">
+                            <input type="text" placeholder="Institution" class="w-full px-3 py-2 bg-gray-600 text-white rounded-lg border border-gray-500" name="edu_institution_0">
+                            <input type="text" placeholder="Year (e.g., 2020)" class="w-full px-3 py-2 bg-gray-600 text-white rounded-lg border border-gray-500" name="edu_year_0">
+                            <input type="text" placeholder="Grade/GPA (optional)" class="w-full px-3 py-2 bg-gray-600 text-white rounded-lg border border-gray-500" name="edu_grade_0">
+                        </div>
+                    </div>
+                </div>
+                <button type="button" onclick="addEducation()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                    <i class="fas fa-plus mr-2"></i>Add Education
+                </button>
+            </div>
+            
+            <!-- Skills Section -->
+            <div class="border-b border-gray-700 pb-8">
+                <h3 class="text-xl font-bold text-white mb-6">Skills</h3>
+                <div id="skills-section">
+                    <div class="skills-category bg-gray-700 p-6 rounded-lg mb-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="text" placeholder="Category (e.g., Technical Skills)" class="w-full px-3 py-2 bg-gray-600 text-white rounded-lg border border-gray-500" name="skill_category_0">
+                            <input type="text" placeholder="Skills (comma separated)" class="w-full px-3 py-2 bg-gray-600 text-white rounded-lg border border-gray-500" name="skill_list_0">
+                        </div>
+                    </div>
+                </div>
+                <button type="button" onclick="addSkillCategory()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                    <i class="fas fa-plus mr-2"></i>Add Skill Category
+                </button>
+            </div>
+            
+            <!-- Submit Buttons -->
+            <div class="flex justify-between">
+                <a href="{% url 'cv_optimizer:templates' %}" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg">
+                    <i class="fas fa-arrow-left mr-2"></i>Back
+                </a>
+                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-bold">
+                    <i class="fas fa-save mr-2"></i>Create CV
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+let expCount = 1;
+let eduCount = 1;
+let skillCount = 1;
+
+function addExperience() {
+    const section = document.getElementById('experience-section');
+    const newExp = document.createElement('div');
+    newExp.className = 'experience-item bg-gray-700 p-6 rounded-lg mb-4';
+    newExp.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <input type="text" placeholder="Job Title" class="w-full px-3 py-2 bg-gray-600 text-white rounded-lg border border-gray-500" name="exp_title_${expCount}">
+            <input type="text" placeholder="Company Name" class="w-full px-3 py-2 bg-gray-600 text-white rounded-lg border border-gray-500" name="exp_company_${expCount}">
+            <input type="text" placeholder="Start Date" class="w-full px-3 py-2 bg-gray-600 text-white rounded-lg border border-gray-500" name="exp_start_${expCount}">
+            <input type="text" placeholder="End Date" class="w-full px-3 py-2 bg-gray-600 text-white rounded-lg border border-gray-500" name="exp_end_${expCount}">
+        </div>
+        <textarea placeholder="Job Description" rows="3" class="w-full px-3 py-2 bg-gray-600 text-white rounded-lg border border-gray-500" name="exp_desc_${expCount}"></textarea>
+        <button type="button" onclick="this.parentElement.remove()" class="mt-2 text-red-400 hover:text-red-300">
+            <i class="fas fa-trash mr-1"></i>Remove
+        </button>
+    `;
+    section.appendChild(newExp);
+    expCount++;
+}
+
+function addEducation() {
+    const section = document.getElementById('education-section');
+    const newEdu = document.createElement('div');
+    newEdu.className = 'education-item bg-gray-700 p-6 rounded-lg mb-4';
+    newEdu.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input type="text" placeholder="Degree" class="w-full px-3 py-2 bg-gray-600 text-white rounded-lg border border-gray-500" name="edu_degree_${eduCount}">
+            <input type="text" placeholder="Institution" class="w-full px-3 py-2 bg-gray-600 text-white rounded-lg border border-gray-500" name="edu_institution_${eduCount}">
+            <input type="text" placeholder="Year" class="w-full px-3 py-2 bg-gray-600 text-white rounded-lg border border-gray-500" name="edu_year_${eduCount}">
+            <input type="text" placeholder="Grade/GPA" class="w-full px-3 py-2 bg-gray-600 text-white rounded-lg border border-gray-500" name="edu_grade_${eduCount}">
+        </div>
+        <button type="button" onclick="this.parentElement.remove()" class="mt-2 text-red-400 hover:text-red-300">
+            <i class="fas fa-trash mr-1"></i>Remove
+        </button>
+    `;
+    section.appendChild(newEdu);
+    eduCount++;
+}
+
+function addSkillCategory() {
+    const section = document.getElementById('skills-section');
+    const newSkill = document.createElement('div');
+    newSkill.className = 'skills-category bg-gray-700 p-6 rounded-lg mb-4';
+    newSkill.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input type="text" placeholder="Category" class="w-full px-3 py-2 bg-gray-600 text-white rounded-lg border border-gray-500" name="skill_category_${skillCount}">
+            <input type="text" placeholder="Skills (comma separated)" class="w-full px-3 py-2 bg-gray-600 text-white rounded-lg border border-gray-500" name="skill_list_${skillCount}">
+        </div>
+        <button type="button" onclick="this.parentElement.remove()" class="mt-2 text-red-400 hover:text-red-300">
+            <i class="fas fa-trash mr-1"></i>Remove
+        </button>
+    `;
+    section.appendChild(newSkill);
+    skillCount++;
+}
+</script>
+
+<style>
+input, textarea, select {
+    background-color: #4b5563 !important;
+    color: white !important;
+    border: 1px solid #6b7280 !important;
+}
+input:focus, textarea:focus, select:focus {
+    outline: none !important;
+    border-color: #3b82f6 !important;
+}
+</style>
+{% endblock %}

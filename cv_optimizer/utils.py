@@ -236,3 +236,103 @@ def optimize_cv(file_path, analysis_report):
     }
     
     return optimization_tips
+
+def generate_cv_pdf(created_cv):
+    """Generate PDF from CreatedCV model"""
+    from reportlab.pdfgen import canvas
+    from reportlab.lib.pagesizes import letter
+    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+    from django.conf import settings
+    import os
+    
+    # Create filename
+    filename = f"{created_cv.full_name.replace(' ', '_')}_CV.pdf"
+    filepath = os.path.join(settings.MEDIA_ROOT, 'created_cvs', filename)
+    
+    # Ensure directory exists
+    os.makedirs(os.path.dirname(filepath), exist_ok=True)
+    
+    # Create PDF
+    doc = SimpleDocTemplate(filepath, pagesize=letter)
+    styles = getSampleStyleSheet()
+    story = []
+    
+    # Header
+    story.append(Paragraph(f"<b>{created_cv.full_name}</b>", styles['Title']))
+    story.append(Paragraph(f"{created_cv.email} | {created_cv.phone}", styles['Normal']))
+    if created_cv.address:
+        story.append(Paragraph(created_cv.address, styles['Normal']))
+    story.append(Spacer(1, 12))
+    
+    # Professional Summary
+    if created_cv.professional_summary:
+        story.append(Paragraph("<b>Professional Summary</b>", styles['Heading2']))
+        story.append(Paragraph(created_cv.professional_summary, styles['Normal']))
+        story.append(Spacer(1, 12))
+    
+    # Experience
+    if created_cv.experience:
+        story.append(Paragraph("<b>Experience</b>", styles['Heading2']))
+        for exp in created_cv.experience:
+            story.append(Paragraph(f"<b>{exp.get('title', '')} at {exp.get('company', '')}</b>", styles['Heading3']))
+            story.append(Paragraph(f"{exp.get('start_date', '')} - {exp.get('end_date', '')}", styles['Normal']))
+            if exp.get('description'):
+                story.append(Paragraph(exp['description'], styles['Normal']))
+            story.append(Spacer(1, 6))
+    
+    # Education
+    if created_cv.education:
+        story.append(Paragraph("<b>Education</b>", styles['Heading2']))
+        for edu in created_cv.education:
+            story.append(Paragraph(f"<b>{edu.get('degree', '')} - {edu.get('institution', '')}</b>", styles['Heading3']))
+            story.append(Paragraph(f"{edu.get('year', '')}", styles['Normal']))
+            story.append(Spacer(1, 6))
+    
+    # Skills
+    if created_cv.skills:
+        story.append(Paragraph("<b>Skills</b>", styles['Heading2']))
+        for category, skills_list in created_cv.skills.items():
+            story.append(Paragraph(f"<b>{category}:</b> {', '.join(skills_list)}", styles['Normal']))
+        story.append(Spacer(1, 12))
+    
+    doc.build(story)
+    return f'created_cvs/{filename}'
+
+def create_pdf_from_text(text_content):
+    """Create PDF from text content"""
+    from reportlab.pdfgen import canvas
+    from reportlab.lib.pagesizes import letter
+    from reportlab.lib.utils import simpleSplit
+    from io import BytesIO
+    
+    buffer = BytesIO()
+    p = canvas.Canvas(buffer, pagesize=letter)
+    width, height = letter
+    
+    # Set up text
+    y_position = height - 50
+    line_height = 14
+    margin = 50
+    
+    lines = text_content.split('\n')
+    
+    for line in lines:
+        if y_position < 50:  # Start new page
+            p.showPage()
+            y_position = height - 50
+        
+        # Wrap long lines
+        wrapped_lines = simpleSplit(line, 'Helvetica', 10, width - 2*margin)
+        
+        for wrapped_line in wrapped_lines:
+            if y_position < 50:
+                p.showPage()
+                y_position = height - 50
+            
+            p.drawString(margin, y_position, wrapped_line)
+            y_position -= line_height
+    
+    p.save()
+    buffer.seek(0)
+    return buffer.getvalue()

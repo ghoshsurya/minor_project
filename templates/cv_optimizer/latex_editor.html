@@ -1,0 +1,525 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}LaTeX CV Editor - JobLift{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="mb-8">
+        <h2 class="text-3xl font-bold text-white mb-2">LaTeX CV Editor</h2>
+        <p class="text-gray-300">Create professional CVs with LaTeX</p>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 h-screen">
+        <!-- Editor Panel -->
+        <div class="bg-gray-800 rounded-lg p-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-white">LaTeX Editor</h3>
+                <div class="space-x-2">
+                    <button onclick="compileLatex()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+                        Compile PDF
+                    </button>
+                    <select id="template-select" onchange="loadSelectedTemplate()" class="bg-green-600 text-white px-4 py-2 rounded">
+                        <option value="">Choose Template</option>
+                        <option value="basic">Basic CV</option>
+                        <option value="modern">Modern CV</option>
+                        <option value="academic">Academic CV</option>
+                        <option value="professional">Professional CV</option>
+                        <option value="altacv">AltaCV Template</option>
+                    </select>
+                </div>
+            </div>
+<div id="latex-editor" class="w-full h-96 bg-gray-900 text-green-400 font-mono rounded border border-gray-600">
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\begin{document}
+
+\begin{center}
+{\Large \textbf{Your Name}}\\
+\vspace{0.2cm}
+Email: your.email@example.com | Phone: +1234567890\\
+LinkedIn: linkedin.com/in/yourprofile
+\end{center}
+
+\section*{Professional Summary}
+Write your professional summary here...
+
+\section*{Experience}
+\textbf{Job Title} | Company Name \hfill Date Range\\
+\begin{itemize}
+\item Achievement or responsibility 1
+\item Achievement or responsibility 2
+\end{itemize}
+
+\section*{Education}
+\textbf{Degree} | University Name \hfill Year\\
+
+\section*{Skills}
+Technical Skills, Programming Languages, Tools
+
+\end{document}
+</div>
+        </div>
+        
+        <!-- Preview Panel -->
+        <div class="bg-gray-800 rounded-lg p-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-white">PDF Preview</h3>
+                <button onclick="downloadPDF()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded">
+                    Download PDF
+                </button>
+            </div>
+            <div id="pdf-preview" class="w-full h-96 bg-white rounded border border-gray-600 flex items-center justify-center">
+                <p class="text-gray-500">Click "Compile PDF" to see preview</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/mode-latex.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/theme-monokai.js"></script>
+<script>
+// Initialize ACE editor for LaTeX
+var editor = ace.edit("latex-editor");
+editor.setTheme("ace/theme/monokai");
+editor.session.setMode("ace/mode/latex");
+editor.setOptions({
+    fontSize: "14px",
+    showLineNumbers: true,
+    showGutter: true,
+    wrap: true
+});
+
+// Set initial content
+editor.setValue(`\\documentclass[11pt,a4paper]{article}
+\\usepackage[utf8]{inputenc}
+\\usepackage{geometry}
+\\geometry{margin=1in}
+
+\\begin{document}
+
+\\begin{center}
+{\\Large \\textbf{Your Name}}\\\\
+\\vspace{0.2cm}
+Email: your.email@example.com | Phone: +1234567890\\\\
+LinkedIn: linkedin.com/in/yourprofile
+\\end{center}
+
+\\section*{Professional Summary}
+Write your professional summary here...
+
+\\section*{Experience}
+\\textbf{Job Title} | Company Name \\hfill Date Range\\\\
+\\begin{itemize}
+\\item Achievement or responsibility 1
+\\item Achievement or responsibility 2
+\\end{itemize}
+
+\\section*{Education}
+\\textbf{Degree} | University Name \\hfill Year\\\\
+
+\\section*{Skills}
+Technical Skills, Programming Languages, Tools
+
+\\end{document}`, -1);
+
+function compileLatex() {
+    const latexCode = editor.getValue();
+    
+    if (!latexCode.trim()) {
+        alert('Please enter LaTeX code first');
+        return;
+    }
+    
+    // Show loading
+    document.getElementById('pdf-preview').innerHTML = '<div class="flex items-center justify-center h-full"><p class="text-gray-500">Compiling PDF...</p></div>';
+    
+    fetch('/cv/latex/compile/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({latex: latexCode})
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('PDF Response:', data);
+        if (data.success) {
+            document.getElementById('pdf-preview').innerHTML = 
+                `<div class="text-center p-4">
+                    <p class="text-green-500 mb-2">PDF Generated Successfully!</p>
+                    <p class="text-gray-400 mb-4">URL: ${data.pdf_url}</p>
+                    <a href="${data.pdf_url}" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+                        Open PDF in New Tab
+                    </a>
+                    <br><br>
+                    <iframe src="${data.pdf_url}#toolbar=0" width="100%" height="400" frameborder="0"></iframe>
+                </div>`;
+        } else {
+            document.getElementById('pdf-preview').innerHTML = 
+                `<div class="flex items-center justify-center h-full"><p class="text-red-500">Error: ${data.error}</p></div>`;
+        }
+    })
+    .catch(error => {
+        document.getElementById('pdf-preview').innerHTML = 
+            '<div class="flex items-center justify-center h-full"><p class="text-red-500">Compilation failed</p></div>';
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+const templates = {
+    basic: `\\documentclass[11pt,a4paper]{article}
+\\usepackage[utf8]{inputenc}
+\\usepackage{geometry}
+\\geometry{margin=1in}
+
+\\begin{document}
+
+\\begin{center}
+{\\Large \\textbf{Your Name}}\\\\
+\\vspace{0.2cm}
+Email: your.email@example.com | Phone: +1234567890\\\\
+LinkedIn: linkedin.com/in/yourprofile
+\\end{center}
+
+\\section*{Professional Summary}
+Write your professional summary here...
+
+\\section*{Experience}
+\\textbf{Job Title} | Company Name \\hfill Date Range\\\\
+\\begin{itemize}
+\\item Achievement or responsibility 1
+\\item Achievement or responsibility 2
+\\end{itemize}
+
+\\section*{Education}
+\\textbf{Degree} | University Name \\hfill Year\\\\
+
+\\section*{Skills}
+Technical Skills, Programming Languages, Tools
+
+\\end{document}`,
+    
+    modern: `\\documentclass[11pt,a4paper,sans]{moderncv}
+\\moderncvstyle{banking}
+\\moderncvcolor{blue}
+\\usepackage[scale=0.75]{geometry}
+
+\\name{John}{Doe}
+\\title{Software Engineer}
+\\address{123 Main Street}{City, State 12345}{USA}
+\\phone[mobile]{+1~(555)~123~4567}
+\\email{john.doe@email.com}
+\\homepage{www.johndoe.com}
+\\social[linkedin]{johndoe}
+\\social[github]{johndoe}
+
+\\begin{document}
+\\makecvtitle
+
+\\section{Experience}
+\\cventry{2020--Present}{Senior Software Engineer}{Tech Corp}{San Francisco}{CA}{
+\\begin{itemize}
+\\item Led development of microservices architecture
+\\item Improved system performance by 40\\%
+\\item Mentored junior developers
+\\end{itemize}}
+
+\\section{Education}
+\\cventry{2016--2020}{B.S. Computer Science}{University of Technology}{}{}{GPA: 3.8/4.0}
+
+\\section{Technical Skills}
+\\cvitem{Languages}{Python, JavaScript, Java, Go}
+\\cvitem{Frameworks}{Django, React, Spring Boot}
+\\cvitem{Tools}{Docker, Kubernetes, AWS, Git}
+
+\\end{document}`,
+    
+    academic: `\\documentclass[11pt,a4paper]{article}
+\\usepackage[utf8]{inputenc}
+\\usepackage{geometry}
+\\usepackage{enumitem}
+\\geometry{margin=1in}
+
+\\begin{document}
+
+\\begin{center}
+{\\Large \\textbf{Dr. Jane Smith}}\\\\
+\\vspace{0.2cm}
+Associate Professor of Computer Science\\\\
+University of Excellence | jane.smith@university.edu | +1-555-0123
+\\end{center}
+
+\\section*{Research Interests}
+Machine Learning, Natural Language Processing, Computer Vision
+
+\\section*{Education}
+\\textbf{Ph.D. Computer Science} | Stanford University \\hfill 2015\\\\
+\\textbf{M.S. Computer Science} | MIT \\hfill 2010\\\\
+\\textbf{B.S. Computer Science} | UC Berkeley \\hfill 2008
+
+\\section*{Publications}
+\\begin{enumerate}[leftmargin=*]
+\\item Smith, J. (2023). \\textit{Advanced Machine Learning Techniques}. Nature AI.
+\\item Smith, J., et al. (2022). \\textit{Deep Learning Applications}. ICML Proceedings.
+\\end{enumerate}
+
+\\section*{Grants and Awards}
+\\textbf{NSF Career Award} \\hfill 2021\\\\
+\\textbf{Best Paper Award, ICML} \\hfill 2020
+
+\\end{document}`,
+    
+    professional: `\\documentclass[10pt,a4paper,withhyper]{altacv}
+\\geometry{left=1.25cm,right=1.25cm,top=1.5cm,bottom=1.5cm,columnsep=1.2cm}
+\\usepackage{paracol}
+
+\\name{YOUR NAME HERE}
+\\tagline{Your Position or Tagline Here}
+\\personalinfo{
+  \\email{your_name@email.com}
+  \\phone{000-00-0000}
+  \\mailaddress{Address, Street, 00000 Country}
+  \\location{Location, COUNTRY}
+  \\homepage{www.homepage.com}
+  \\twitter{@x-handle}
+  \\linkedin{your_id}
+  \\github{your_id}
+  \\orcid{0000-0000-0000-0000}
+}
+
+\\makecvheader
+
+\\begin{document}
+
+\\columnratio{0.6}
+\\begin{paracol}{2}
+
+\\cvsection{Experience}
+
+\\cvevent{Job Title 1}{Company 1}{Month 20XX -- Ongoing}{Location}
+\\begin{itemize}
+\\item Job description 1
+\\item Job description 2
+\\end{itemize}
+
+\\divider
+
+\\cvevent{Job Title 2}{Company 2}{Month 20XX -- Ongoing}{Location}
+\\begin{itemize}
+\\item Job description 1
+\\item Job description 2
+\\end{itemize}
+
+\\cvsection{Projects}
+
+\\cvevent{Project 1}{Funding agency/institution}{}{}
+\\begin{itemize}
+\\item Details
+\\end{itemize}
+
+\\divider
+
+\\cvevent{Project 2}{Funding agency/institution}{Project duration}{}
+A short abstract would also work.
+
+\\switchcolumn
+
+\\cvsection{My Life Philosophy}
+\\quote{Something smart or heartfelt, preferably in one sentence.}
+
+\\cvsection{Most Proud of}
+
+\\cvachievement{\\faTrophy}{Fantastic Achievement}{and some details about it}
+
+\\divider
+
+\\cvachievement{\\faHeartbeat}{Another achievement}{more details about it of course}
+
+\\divider
+
+\\cvachievement{\\faHeartbeat}{Another achievement}{more details about it of course}
+
+\\cvsection{Strengths}
+
+\\cvtag{Hard-working}
+\\cvtag{Eye for detail}
+\\cvtag{Motivator \\& Leader}
+
+\\divider\\smallskip
+
+\\cvtag{C++}
+\\cvtag{Embedded Systems}
+\\cvtag{Statistical Analysis}
+
+\\cvsection{Languages}
+
+\\cvskill{English}{5}
+\\cvskill{Spanish}{4}
+\\cvskill{German}{3}
+
+\\cvsection{Education}
+
+\\cvevent{Ph.D. in Your Discipline}{Your University}{Sept 2002 -- June 2006}{}
+Thesis title: Wonderful Research
+
+\\divider
+
+\\cvevent{M.Sc. in Your Discipline}{Your University}{Sept 2001 -- June 2002}{}
+
+\\divider
+
+\\cvevent{B.Sc. in Your Discipline}{Stanford University}{Sept 1998 -- June 2001}{}
+
+\\end{paracol}
+
+\\end{document}`,
+    
+    altacv: `\\documentclass[10pt,a4paper,withhyper]{altacv}
+\\geometry{left=1.25cm,right=1.25cm,top=1.5cm,bottom=1.5cm,columnsep=1.2cm}
+\\usepackage{paracol}
+
+\\name{YOUR NAME HERE}
+\\tagline{Your Position or Tagline Here}
+\\personalinfo{
+  \\email{your_name@email.com}
+  \\phone{000-00-0000}
+  \\mailaddress{Address, Street, 00000 Country}
+  \\location{Location, COUNTRY}
+  \\homepage{www.homepage.com}
+  \\twitter{@x-handle}
+  \\linkedin{your_id}
+  \\github{your_id}
+  \\orcid{0000-0000-0000-0000}
+}
+
+\\makecvheader
+
+\\begin{document}
+
+\\columnratio{0.6}
+\\begin{paracol}{2}
+
+\\cvsection{Experience}
+
+\\cvevent{Job Title 1}{Company 1}{Month 20XX -- Ongoing}{Location}
+\\begin{itemize}
+\\item Job description 1
+\\item Job description 2
+\\end{itemize}
+
+\\divider
+
+\\cvevent{Job Title 2}{Company 2}{Month 20XX -- Ongoing}{Location}
+\\begin{itemize}
+\\item Job description 1
+\\item Job description 2
+\\end{itemize}
+
+\\cvsection{Projects}
+
+\\cvevent{Project 1}{Funding agency/institution}{}{}
+\\begin{itemize}
+\\item Details
+\\end{itemize}
+
+\\divider
+
+\\cvevent{Project 2}{Funding agency/institution}{Project duration}{}
+A short abstract would also work.
+
+\\switchcolumn
+
+\\cvsection{My Life Philosophy}
+\\quote{Something smart or heartfelt, preferably in one sentence.}
+
+\\cvsection{Most Proud of}
+
+\\cvachievement{\\faTrophy}{Fantastic Achievement}{and some details about it}
+
+\\divider
+
+\\cvachievement{\\faHeartbeat}{Another achievement}{more details about it of course}
+
+\\divider
+
+\\cvachievement{\\faHeartbeat}{Another achievement}{more details about it of course}
+
+\\cvsection{Strengths}
+
+\\cvtag{Hard-working}
+\\cvtag{Eye for detail}
+\\cvtag{Motivator \\& Leader}
+
+\\divider\\smallskip
+
+\\cvtag{C++}
+\\cvtag{Embedded Systems}
+\\cvtag{Statistical Analysis}
+
+\\cvsection{Languages}
+
+\\cvskill{English}{5}
+\\cvskill{Spanish}{4}
+\\cvskill{German}{3}
+
+\\cvsection{Education}
+
+\\cvevent{Ph.D. in Your Discipline}{Your University}{Sept 2002 -- June 2006}{}
+Thesis title: Wonderful Research
+
+\\divider
+
+\\cvevent{M.Sc. in Your Discipline}{Your University}{Sept 2001 -- June 2002}{}
+
+\\divider
+
+\\cvevent{B.Sc. in Your Discipline}{Stanford University}{Sept 1998 -- June 2001}{}
+
+\\end{paracol}
+
+\\end{document}`
+};
+
+function loadSelectedTemplate() {
+    const select = document.getElementById('template-select');
+    const templateType = select.value;
+    
+    if (templateType && templates[templateType]) {
+        editor.setValue(templates[templateType]);
+        select.selectedIndex = 0; // Reset dropdown
+    }
+}
+
+function downloadPDF() {
+    const iframe = document.querySelector('#pdf-preview iframe');
+    if (iframe) {
+        const link = document.createElement('a');
+        link.href = iframe.src;
+        link.download = 'cv.pdf';
+        link.click();
+    } else {
+        alert('Please compile the LaTeX first');
+    }
+}
+</script>
+{% endblock %}

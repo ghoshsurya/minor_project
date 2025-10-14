@@ -1,0 +1,325 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Template Preview - JobLift{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-12">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h2 class="text-3xl font-bold text-white mb-2">{{ template.name }} Preview</h2>
+            <p class="text-gray-300">{{ template.description }}</p>
+        </div>
+        <div class="flex space-x-3">
+            <button onclick="window.close()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg">
+                Close
+            </button>
+            <a href="{% url 'cv_optimizer:builder' template.id %}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-bold">
+                Use This Template
+            </a>
+        </div>
+    </div>
+    
+    <!-- Template Preview -->
+    <div class="bg-white rounded-xl shadow-xl overflow-hidden">
+        <div class="p-8" style="{{ template.css_styles|safe }}">
+            {% if template.template_type == 'modern' %}
+            <!-- Modern Template Preview -->
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center border-b-4 border-blue-600 pb-6 mb-8">
+                    <h1 class="text-4xl font-bold text-gray-800 mb-2">John Doe</h1>
+                    <p class="text-xl text-blue-600 font-semibold mb-4">Senior Software Developer</p>
+                    <div class="flex justify-center space-x-6 text-gray-600">
+                        <span><i class="fas fa-envelope mr-2"></i>john.doe@email.com</span>
+                        <span><i class="fas fa-phone mr-2"></i>+1 (555) 123-4567</span>
+                        <span><i class="fab fa-linkedin mr-2"></i>linkedin.com/in/johndoe</span>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-8">
+                    <div class="col-span-2">
+                        <div class="mb-8">
+                            <h2 class="text-2xl font-bold text-blue-600 mb-4 border-b-2 border-blue-200 pb-2">Experience</h2>
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-gray-800">Senior Software Developer</h3>
+                                <p class="text-blue-600 font-medium">Tech Company Inc.</p>
+                                <p class="text-gray-600 text-sm mb-2">Jan 2020 - Present</p>
+                                <p class="text-gray-700">Led development of web applications using React and Node.js...</p>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h2 class="text-2xl font-bold text-blue-600 mb-4 border-b-2 border-blue-200 pb-2">Education</h2>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-800">Bachelor of Computer Science</h3>
+                                <p class="text-blue-600">University of Technology</p>
+                                <p class="text-gray-600 text-sm">2016 - 2020</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="mb-8">
+                            <h2 class="text-xl font-bold text-gray-800 mb-4">Skills</h2>
+                            <div class="space-y-3">
+                                <div>
+                                    <h3 class="font-semibold text-gray-700">Programming</h3>
+                                    <p class="text-sm text-gray-600">JavaScript, Python, Java</p>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-700">Frameworks</h3>
+                                    <p class="text-sm text-gray-600">React, Django, Spring</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {% elif template.template_type == 'classic' %}
+            <!-- Classic Template Preview -->
+            <div class="max-w-4xl mx-auto font-serif">
+                <div class="text-center border-b-2 border-gray-400 pb-4 mb-6">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">JOHN DOE</h1>
+                    <p class="text-gray-600">Senior Software Developer</p>
+                    <p class="text-sm text-gray-600 mt-2">john.doe@email.com | +1 (555) 123-4567 | New York, NY</p>
+                </div>
+                
+                <div class="mb-6">
+                    <h2 class="text-lg font-bold text-gray-800 mb-3 uppercase tracking-wide">Professional Experience</h2>
+                    <div class="mb-4">
+                        <div class="flex justify-between items-start mb-1">
+                            <h3 class="font-semibold text-gray-800">Senior Software Developer</h3>
+                            <span class="text-sm text-gray-600">Jan 2020 - Present</span>
+                        </div>
+                        <p class="text-gray-700 italic mb-2">Tech Company Inc., New York, NY</p>
+                        <p class="text-gray-700 text-sm">• Led development of web applications using modern technologies</p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-8">
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-800 mb-3 uppercase tracking-wide">Education</h2>
+                        <div>
+                            <h3 class="font-semibold text-gray-800">Bachelor of Computer Science</h3>
+                            <p class="text-gray-700">University of Technology</p>
+                            <p class="text-sm text-gray-600">2016 - 2020</p>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-800 mb-3 uppercase tracking-wide">Skills</h2>
+                        <p class="text-gray-700 text-sm">JavaScript, Python, React, Django, Node.js, SQL</p>
+                    </div>
+                </div>
+            </div>
+            
+            {% elif template.name == 'Web Developer Pro' %}
+            <!-- Web Developer Template -->
+            <div class="max-w-4xl mx-auto bg-gradient-to-br from-blue-50 to-indigo-100 p-8 rounded-lg">
+                <div class="flex items-center mb-6">
+                    <div class="w-20 h-20 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center mr-6">
+                        <i class="fas fa-code text-2xl text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-800">Alex Johnson</h1>
+                        <p class="text-xl text-blue-600 font-semibold">Full Stack Web Developer</p>
+                        <p class="text-gray-600">alex.johnson@email.com | Portfolio: alexdev.com</p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-6">
+                    <div class="col-span-2 space-y-6">
+                        <div class="bg-white p-4 rounded-lg shadow">
+                            <h2 class="text-xl font-bold text-blue-600 mb-3"><i class="fas fa-laptop-code mr-2"></i>Projects</h2>
+                            <div class="space-y-3">
+                                <div class="border-l-4 border-blue-500 pl-4">
+                                    <h3 class="font-semibold text-gray-800">E-commerce Platform</h3>
+                                    <p class="text-sm text-gray-600">React, Node.js, MongoDB</p>
+                                </div>
+                                <div class="border-l-4 border-green-500 pl-4">
+                                    <h3 class="font-semibold text-gray-800">Task Management App</h3>
+                                    <p class="text-sm text-gray-600">Vue.js, Express, PostgreSQL</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-white p-4 rounded-lg shadow">
+                            <h2 class="text-lg font-bold text-gray-800 mb-3">Tech Stack</h2>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">JavaScript</span>
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">React</span>
+                                <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">Node.js</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {% elif template.name == 'Data Analyst Expert' %}
+            <!-- Data Analyst Template -->
+            <div class="max-w-4xl mx-auto bg-gray-50 p-8 rounded-lg">
+                <div class="bg-white p-6 rounded-lg shadow mb-6">
+                    <h1 class="text-3xl font-bold text-gray-800">Sarah Chen</h1>
+                    <p class="text-xl text-green-600 font-semibold">Senior Data Analyst</p>
+                    <p class="text-gray-600">sarah.chen@email.com | LinkedIn: /in/sarahchen</p>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-6">
+                    <div class="col-span-2">
+                        <div class="bg-white p-4 rounded-lg shadow">
+                            <h2 class="text-xl font-bold text-green-600 mb-3"><i class="fas fa-chart-bar mr-2"></i>Key Achievements</h2>
+                            <ul class="space-y-2 text-gray-700">
+                                <li>• Increased revenue by 25% through predictive analytics</li>
+                                <li>• Built automated reporting system saving 20 hours/week</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="bg-white p-4 rounded-lg shadow">
+                            <h2 class="text-lg font-bold text-gray-800 mb-3">Tools</h2>
+                            <div class="text-sm text-gray-600 space-y-1">
+                                <p>🐍 Python</p>
+                                <p>📊 SQL</p>
+                                <p>📈 Tableau</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {% elif template.name == 'UI/UX Designer' %}
+            <!-- UI/UX Designer Template -->
+            <div class="max-w-4xl mx-auto bg-gradient-to-br from-pink-50 to-purple-100 p-8 rounded-lg">
+                <div class="text-center mb-8">
+                    <div class="w-24 h-24 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+                        <i class="fas fa-palette text-3xl text-white"></i>
+                    </div>
+                    <h1 class="text-4xl font-bold text-gray-800 mb-2">Emma Rodriguez</h1>
+                    <p class="text-2xl text-purple-600 font-semibold mb-4">UI/UX Designer</p>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                        <h2 class="text-xl font-bold text-purple-600 mb-4">Featured Projects</h2>
+                        <div class="space-y-3">
+                            <div class="flex items-center p-3 bg-pink-50 rounded-lg">
+                                <div class="w-12 h-12 bg-gradient-to-r from-pink-400 to-red-500 rounded-lg mr-3"></div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-800">Banking App Redesign</h3>
+                                    <p class="text-sm text-gray-600">Increased engagement by 40%</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                        <h2 class="text-xl font-bold text-purple-600 mb-4">Design Tools</h2>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="text-center p-3 bg-gray-50 rounded-lg">
+                                <i class="fab fa-figma text-2xl text-purple-600 mb-2"></i>
+                                <p class="text-sm font-semibold">Figma</p>
+                            </div>
+                            <div class="text-center p-3 bg-gray-50 rounded-lg">
+                                <i class="fas fa-pencil-ruler text-2xl text-blue-600 mb-2"></i>
+                                <p class="text-sm font-semibold">Sketch</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {% elif template.template_type == 'creative' %}
+            <!-- Creative Template Preview -->
+            <div class="max-w-4xl mx-auto">
+                <div class="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-6 rounded-t-lg">
+                    <h1 class="text-4xl font-bold mb-2">John Doe</h1>
+                    <p class="text-xl opacity-90">Creative Software Developer</p>
+                </div>
+                
+                <div class="bg-gray-50 p-6 rounded-b-lg">
+                    <div class="grid grid-cols-3 gap-6">
+                        <div class="col-span-2">
+                            <div class="bg-white p-4 rounded-lg shadow mb-4">
+                                <h2 class="text-xl font-bold text-purple-600 mb-3">💼 Experience</h2>
+                                <div class="border-l-4 border-purple-400 pl-4">
+                                    <h3 class="font-semibold text-gray-800">Senior Developer</h3>
+                                    <p class="text-purple-600">Creative Tech Studio</p>
+                                    <p class="text-sm text-gray-600">2020 - Present</p>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white p-4 rounded-lg shadow">
+                                <h2 class="text-xl font-bold text-blue-600 mb-3">🎓 Education</h2>
+                                <div class="border-l-4 border-blue-400 pl-4">
+                                    <h3 class="font-semibold text-gray-800">Computer Science Degree</h3>
+                                    <p class="text-blue-600">Design University</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="bg-white p-4 rounded-lg shadow">
+                                <h2 class="text-xl font-bold text-green-600 mb-3">🚀 Skills</h2>
+                                <div class="space-y-2">
+                                    <span class="inline-block bg-purple-100 text-purple-800 px-2 py-1 rounded text-sm">React</span>
+                                    <span class="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">Python</span>
+                                    <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded text-sm">Design</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {% else %}
+            <!-- Minimal Template Preview -->
+            <div class="max-w-4xl mx-auto">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-light text-gray-800 mb-1">John Doe</h1>
+                    <p class="text-gray-600 mb-4">Software Developer</p>
+                    <div class="text-sm text-gray-500 space-x-4">
+                        <span>john.doe@email.com</span>
+                        <span>+1 (555) 123-4567</span>
+                        <span>New York, NY</span>
+                    </div>
+                </div>
+                
+                <div class="space-y-8">
+                    <div>
+                        <h2 class="text-lg font-medium text-gray-800 mb-4 border-b border-gray-300 pb-1">Experience</h2>
+                        <div class="mb-4">
+                            <div class="flex justify-between mb-1">
+                                <h3 class="font-medium text-gray-800">Senior Software Developer</h3>
+                                <span class="text-sm text-gray-500">2020 - Present</span>
+                            </div>
+                            <p class="text-gray-600 text-sm mb-2">Tech Company Inc.</p>
+                            <p class="text-gray-700 text-sm">Developed and maintained web applications...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-8">
+                        <div>
+                            <h2 class="text-lg font-medium text-gray-800 mb-4 border-b border-gray-300 pb-1">Education</h2>
+                            <div>
+                                <h3 class="font-medium text-gray-800">Bachelor of Computer Science</h3>
+                                <p class="text-gray-600 text-sm">University of Technology, 2020</p>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h2 class="text-lg font-medium text-gray-800 mb-4 border-b border-gray-300 pb-1">Skills</h2>
+                            <p class="text-gray-700 text-sm">JavaScript, Python, React, Django, Node.js</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

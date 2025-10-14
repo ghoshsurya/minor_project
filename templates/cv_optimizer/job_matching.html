@@ -1,0 +1,348 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Job Matching - ATS Optimizer{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900">
+    <!-- Header Section -->
+    <div class="relative overflow-hidden bg-gradient-to-r from-blue-600 to-purple-600 py-16">
+        <div class="absolute inset-0 bg-black opacity-20"></div>
+        <div class="relative max-w-7xl mx-auto px-4">
+            <div class="text-center">
+                <h1 class="text-5xl font-bold text-white mb-4">
+                    <i class="fas fa-robot mr-4 text-yellow-400"></i>AI Job Matching
+                </h1>
+                <p class="text-xl text-blue-100 mb-8">Discover perfect opportunities tailored to your CV</p>
+                
+                <!-- Search Bar -->
+                <div class="max-w-2xl mx-auto">
+                    <form method="get" class="flex gap-4">
+                        <div class="flex-1">
+                            <input type="text" name="location" 
+                                   class="w-full px-6 py-4 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-yellow-400" 
+                                   placeholder="Enter location (e.g., Mumbai, Remote)" 
+                                   value="{{ location }}">
+                        </div>
+                        <button type="submit" 
+                                class="px-8 py-4 bg-yellow-500 hover:bg-yellow-400 text-black font-bold rounded-full transition-all duration-300 transform hover:scale-105">
+                            <i class="fas fa-search mr-2"></i>Search
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 py-12">
+        <!-- Stats Dashboard -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+            <div class="bg-gradient-to-r from-green-500 to-emerald-600 p-6 rounded-2xl text-white transform hover:scale-105 transition-all duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-green-100 text-sm font-medium">Jobs Found</p>
+                        <p class="text-3xl font-bold">{{ total_jobs }}</p>
+                    </div>
+                    <i class="fas fa-briefcase text-4xl text-green-200"></i>
+                </div>
+            </div>
+            
+            <div class="bg-gradient-to-r from-blue-500 to-cyan-600 p-6 rounded-2xl text-white transform hover:scale-105 transition-all duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-blue-100 text-sm font-medium">Job Titles</p>
+                        <p class="text-3xl font-bold">{{ search_suggestions.job_titles|length }}</p>
+                    </div>
+                    <i class="fas fa-tags text-4xl text-blue-200"></i>
+                </div>
+            </div>
+            
+            <div class="bg-gradient-to-r from-purple-500 to-pink-600 p-6 rounded-2xl text-white transform hover:scale-105 transition-all duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-purple-100 text-sm font-medium">Portals</p>
+                        <p class="text-3xl font-bold">4</p>
+                    </div>
+                    <i class="fas fa-globe text-4xl text-purple-200"></i>
+                </div>
+            </div>
+            
+            <div class="bg-gradient-to-r from-orange-500 to-red-600 p-6 rounded-2xl text-white transform hover:scale-105 transition-all duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-orange-100 text-sm font-medium">Match Score</p>
+                        <p class="text-3xl font-bold">{{ cv_upload.job_match_percentage|default:"85" }}%</p>
+                    </div>
+                    <i class="fas fa-bullseye text-4xl text-orange-200"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Suggestions Panel -->
+        <div class="bg-gray-800/50 backdrop-blur-md rounded-3xl p-8 mb-12 border border-gray-700/50">
+            <h2 class="text-2xl font-bold text-white mb-6">
+                <i class="fas fa-lightbulb text-yellow-400 mr-3"></i>AI Recommendations
+            </h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold text-blue-400 mb-4">Recommended Job Titles</h3>
+                    <div class="space-y-2">
+                        {% for title in search_suggestions.job_titles %}
+                            <div class="flex items-center p-3 bg-blue-500/10 rounded-xl border border-blue-500/20">
+                                <i class="fas fa-arrow-right text-blue-400 mr-3"></i>
+                                <span class="text-white font-medium">{{ title }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-purple-400 mb-4">Key Skills</h3>
+                    <div class="flex flex-wrap gap-2">
+                        {% for keyword in search_suggestions.search_keywords %}
+                            <span class="px-4 py-2 bg-purple-500/20 text-purple-300 rounded-full border border-purple-500/30 hover:bg-purple-500/30 transition-colors">
+                                {{ keyword }}
+                            </span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Job Listings -->
+        <div class="space-y-6">
+            <h2 class="text-3xl font-bold text-white mb-8">
+                <i class="fas fa-list text-green-400 mr-3"></i>Perfect Matches for You
+            </h2>
+            
+            {% for job in jobs %}
+                <div class="bg-gray-800/50 backdrop-blur-md rounded-3xl p-8 border border-gray-700/50 hover:border-blue-500/50 transition-all duration-300 transform hover:scale-[1.02]">
+                    <div class="flex flex-col lg:flex-row gap-6">
+                        <!-- Job Info -->
+                        <div class="flex-1">
+                            <div class="flex items-start justify-between mb-4">
+                                <div>
+                                    <h3 class="text-2xl font-bold text-white mb-2">{{ job.title }}</h3>
+                                    <p class="text-xl text-blue-400 font-semibold">{{ job.company }}</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="inline-block px-4 py-2 bg-{{ job.portal|lower }}-500 text-white rounded-full text-sm font-bold mb-2">
+                                        {{ job.portal }}
+                                    </span>
+                                    <p class="text-green-400 font-bold text-lg">{{ job.salary }}</p>
+                                </div>
+                            </div>
+                            
+                            <p class="text-gray-300 mb-4 leading-relaxed">{{ job.description|truncatewords:25 }}</p>
+                            
+                            <!-- Job Details -->
+                            <div class="flex flex-wrap gap-4 mb-4 text-sm text-gray-400">
+                                <div class="flex items-center">
+                                    <i class="fas fa-map-marker-alt text-red-400 mr-2"></i>
+                                    {{ job.location }}
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fas fa-clock text-yellow-400 mr-2"></i>
+                                    {{ job.posted_date }}
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fas fa-briefcase text-blue-400 mr-2"></i>
+                                    {{ job.job_type }}
+                                </div>
+                            </div>
+                            
+                            <!-- Requirements -->
+                            <div class="mb-6">
+                                <p class="text-white font-semibold mb-2">Required Skills:</p>
+                                <div class="flex flex-wrap gap-2">
+                                    {% for req in job.requirements %}
+                                        <span class="px-3 py-1 bg-gray-700 text-gray-300 rounded-full text-sm border border-gray-600">
+                                            {{ req }}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="lg:w-64 flex flex-col gap-3">
+                            <a href="{{ job.url }}" target="_blank" 
+                               class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-4 px-6 rounded-2xl text-center transition-all duration-300 transform hover:scale-105">
+                                <i class="fas fa-external-link-alt mr-2"></i>Apply Now
+                            </a>
+                            
+                            <a href="{% url 'cv_optimizer:application_guide' %}?title={{ job.title|urlencode }}&company={{ job.company|urlencode }}&portal={{ job.portal|urlencode }}&url={{ job.url|urlencode }}" 
+                               class="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-4 px-6 rounded-2xl text-center transition-all duration-300 transform hover:scale-105">
+                                <i class="fas fa-graduation-cap mr-2"></i>Get Guide
+                            </a>
+                            
+                            <button onclick="saveJob('{{ job.title }}', '{{ job.company }}')" 
+                                    class="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-4 px-6 rounded-2xl transition-all duration-300">
+                                <i class="fas fa-bookmark mr-2"></i>Save Job
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="text-center py-20">
+                    <div class="bg-gray-800/50 backdrop-blur-md rounded-3xl p-12 border border-gray-700/50">
+                        <i class="fas fa-search text-6xl text-gray-500 mb-6"></i>
+                        <h3 class="text-2xl font-bold text-white mb-4">No Jobs Found</h3>
+                        <p class="text-gray-400 mb-8">Try adjusting your search criteria or location.</p>
+                        <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full" 
+                                data-bs-toggle="modal" data-bs-target="#customSearchModal">
+                            <i class="fas fa-search mr-2"></i>Custom Search
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Application Tips -->
+        <div class="mt-12 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 backdrop-blur-md rounded-3xl p-8 border border-yellow-500/20">
+            <h2 class="text-2xl font-bold text-yellow-400 mb-6">
+                <i class="fas fa-lightbulb mr-3"></i>Pro Application Tips
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {% for tip in search_suggestions.application_tips %}
+                    <div class="flex items-start p-4 bg-yellow-500/5 rounded-xl border border-yellow-500/10">
+                        <i class="fas fa-check-circle text-yellow-400 mr-3 mt-1"></i>
+                        <span class="text-gray-300">{{ tip }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="mt-12 text-center">
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="{% url 'cv_optimizer:ai_optimized' cv_upload.id %}" 
+                   class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-8 rounded-full transition-all duration-300">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Analysis
+                </a>
+                <button class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-full transition-all duration-300" 
+                        data-bs-toggle="modal" data-bs-target="#customSearchModal">
+                    <i class="fas fa-search mr-2"></i>Custom Search
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Search Modal -->
+<div class="modal fade" id="customSearchModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-gray-800 border-gray-700">
+            <div class="modal-header border-gray-700">
+                <h5 class="modal-title text-white">
+                    <i class="fas fa-search text-blue-400 mr-2"></i>Custom Job Search
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="customSearchForm" class="space-y-4">
+                    <div>
+                        <label class="block text-white font-semibold mb-2">Job Title</label>
+                        <input type="text" class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                               name="job_title" placeholder="e.g., Software Engineer" required>
+                    </div>
+                    <div>
+                        <label class="block text-white font-semibold mb-2">Location</label>
+                        <input type="text" class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                               name="location" placeholder="e.g., Mumbai, Remote">
+                    </div>
+                    <input type="hidden" name="cv_id" value="{{ cv_upload.id }}">
+                </form>
+            </div>
+            <div class="modal-footer border-gray-700">
+                <button type="button" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-xl" data-bs-dismiss="modal">
+                    Cancel
+                </button>
+                <button type="button" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl" onclick="performCustomSearch()">
+                    <i class="fas fa-search mr-2"></i>Search Jobs
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function performCustomSearch() {
+    const form = document.getElementById('customSearchForm');
+    const formData = new FormData(form);
+    
+    // Show loading state
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Searching...';
+    button.disabled = true;
+    
+    fetch('{% url "cv_optimizer:custom_job_search" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Search failed. Please try again.');
+            button.innerHTML = originalText;
+            button.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Search failed. Please try again.');
+        button.innerHTML = originalText;
+        button.disabled = false;
+    });
+}
+
+function saveJob(title, company) {
+    // Save job to localStorage
+    let savedJobs = JSON.parse(localStorage.getItem('savedJobs') || '[]');
+    const job = { title, company, savedAt: new Date().toISOString() };
+    
+    if (!savedJobs.find(j => j.title === title && j.company === company)) {
+        savedJobs.push(job);
+        localStorage.setItem('savedJobs', JSON.stringify(savedJobs));
+        
+        // Show success message
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check mr-2"></i>Saved!';
+        button.classList.add('bg-green-600');
+        
+        setTimeout(() => {
+            button.innerHTML = originalText;
+            button.classList.remove('bg-green-600');
+        }, 2000);
+    } else {
+        alert('Job already saved!');
+    }
+}
+
+// Add smooth scroll animations
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate job cards on scroll
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    });
+    
+    document.querySelectorAll('.bg-gray-800\/50').forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(card);
+    });
+});
+</script>
+{% endblock %}

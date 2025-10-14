@@ -1,0 +1,380 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Application Guide - ATS Optimizer{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-indigo-900 to-purple-900">
+    <!-- Hero Section -->
+    <div class="relative overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 py-20">
+        <div class="absolute inset-0 bg-black opacity-30"></div>
+        <div class="absolute inset-0">
+            <div class="absolute top-10 left-10 w-20 h-20 bg-yellow-400 rounded-full opacity-20 animate-pulse"></div>
+            <div class="absolute bottom-10 right-10 w-32 h-32 bg-blue-400 rounded-full opacity-20 animate-bounce"></div>
+            <div class="absolute top-1/2 left-1/4 w-16 h-16 bg-green-400 rounded-full opacity-20 animate-ping"></div>
+        </div>
+        <div class="relative max-w-7xl mx-auto px-4">
+            <div class="text-center">
+                <div class="inline-flex items-center justify-center w-20 h-20 bg-white/10 backdrop-blur-md rounded-full mb-6">
+                    <i class="fas fa-graduation-cap text-3xl text-yellow-400"></i>
+                </div>
+                <h1 class="text-5xl font-bold text-white mb-4">Application Strategy</h1>
+                <p class="text-xl text-indigo-100 mb-8">AI-powered guidance for your dream job</p>
+                
+                <!-- Job Info Card -->
+                <div class="max-w-4xl mx-auto bg-white/10 backdrop-blur-md rounded-3xl p-8 border border-white/20">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
+                        <div class="text-center lg:text-left">
+                            <h2 class="text-3xl font-bold text-white mb-2">{{ job_data.title }}</h2>
+                            <p class="text-xl text-indigo-200">{{ job_data.company }}</p>
+                            <span class="inline-block mt-3 px-4 py-2 bg-{{ job_data.portal|lower }}-500 text-white rounded-full text-sm font-bold">
+                                {{ job_data.portal }}
+                            </span>
+                        </div>
+                        <div class="flex justify-center">
+                            <div class="w-32 h-32 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-bullseye text-4xl text-white"></i>
+                            </div>
+                        </div>
+                        <div class="text-center lg:text-right">
+                            {% if job_data.url %}
+                                <a href="{{ job_data.url }}" target="_blank" 
+                                   class="inline-block bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 transform hover:scale-105 mb-4">
+                                    <i class="fas fa-external-link-alt mr-2"></i>Apply Now
+                                </a>
+                            {% endif %}
+                            <div class="flex justify-center lg:justify-end gap-3">
+                                <button onclick="printGuide()" 
+                                        class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl transition-all duration-300">
+                                    <i class="fas fa-print mr-2"></i>Print
+                                </button>
+                                <button onclick="saveGuide()" 
+                                        class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl transition-all duration-300">
+                                    <i class="fas fa-bookmark mr-2"></i>Save
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 py-12">
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- AI Strategy Section -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- AI Generated Strategy -->
+                <div class="bg-gray-800/50 backdrop-blur-md rounded-3xl p-8 border border-gray-700/50">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mr-4">
+                            <i class="fas fa-robot text-white text-xl"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-white">AI-Generated Strategy</h2>
+                    </div>
+                    <div class="bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-2xl p-6 border border-blue-500/20">
+                        <div class="prose prose-invert max-w-none">
+                            <pre class="text-gray-300 whitespace-pre-wrap font-sans leading-relaxed">{{ guide }}</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactive Checklist -->
+                <div class="bg-gray-800/50 backdrop-blur-md rounded-3xl p-8 border border-gray-700/50">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mr-4">
+                            <i class="fas fa-list-check text-white text-xl"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-white">Application Checklist</h2>
+                        <div class="ml-auto">
+                            <span id="progress-text" class="text-green-400 font-semibold">0/{{ checklist|length }} completed</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Progress Bar -->
+                    <div class="mb-6">
+                        <div class="w-full bg-gray-700 rounded-full h-3">
+                            <div id="progress-bar" class="bg-gradient-to-r from-green-500 to-emerald-600 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        {% for item in checklist %}
+                            <div class="flex items-start p-4 bg-gray-700/30 rounded-2xl border border-gray-600/30 hover:border-green-500/30 transition-all duration-300 checklist-item">
+                                <input class="w-5 h-5 text-green-500 bg-gray-700 border-gray-600 rounded focus:ring-green-500 focus:ring-2 mr-4 mt-1 checklist-checkbox" 
+                                       type="checkbox" id="check{{ forloop.counter }}" onchange="updateProgress()">
+                                <label class="text-gray-300 cursor-pointer flex-1 leading-relaxed" for="check{{ forloop.counter }}">
+                                    {{ item }}
+                                </label>
+                                <i class="fas fa-check text-green-500 opacity-0 transition-opacity duration-300 check-icon"></i>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="space-y-8">
+                <!-- Portal Tips -->
+                <div class="bg-gray-800/50 backdrop-blur-md rounded-3xl p-6 border border-gray-700/50">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center mr-3">
+                            <i class="fas fa-globe text-white"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white">{{ job_data.portal }} Tips</h3>
+                    </div>
+                    <div class="space-y-3">
+                        {% for tip in portal_tips %}
+                            <div class="flex items-start p-3 bg-cyan-500/10 rounded-xl border border-cyan-500/20">
+                                <i class="fas fa-arrow-right text-cyan-400 mr-3 mt-1"></i>
+                                <span class="text-gray-300 text-sm">{{ tip }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Learning Resources -->
+                <div class="bg-gray-800/50 backdrop-blur-md rounded-3xl p-6 border border-gray-700/50">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-600 rounded-xl flex items-center justify-center mr-3">
+                            <i class="fas fa-book text-white"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white">Resources</h3>
+                    </div>
+                    
+                    <!-- Courses -->
+                    <div class="mb-6">
+                        <button class="w-full flex items-center justify-between p-3 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-xl border border-purple-500/30 text-white hover:border-purple-500/50 transition-all duration-300" 
+                                onclick="toggleSection('courses')">
+                            <div class="flex items-center">
+                                <i class="fas fa-graduation-cap mr-3 text-purple-400"></i>
+                                <span class="font-semibold">Courses</span>
+                            </div>
+                            <i class="fas fa-chevron-down transition-transform duration-300" id="courses-icon"></i>
+                        </button>
+                        <div id="courses" class="hidden mt-3 space-y-2">
+                            {% for course in resources.courses %}
+                                <div class="p-3 bg-purple-500/5 rounded-xl border border-purple-500/10">
+                                    <p class="text-white font-medium">{{ course.name }}</p>
+                                    <p class="text-purple-300 text-sm">{{ course.platform }}</p>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Certifications -->
+                    <div class="mb-6">
+                        <button class="w-full flex items-center justify-between p-3 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-xl border border-green-500/30 text-white hover:border-green-500/50 transition-all duration-300" 
+                                onclick="toggleSection('certifications')">
+                            <div class="flex items-center">
+                                <i class="fas fa-certificate mr-3 text-green-400"></i>
+                                <span class="font-semibold">Certifications</span>
+                            </div>
+                            <i class="fas fa-chevron-down transition-transform duration-300" id="certifications-icon"></i>
+                        </button>
+                        <div id="certifications" class="hidden mt-3 space-y-2">
+                            {% for cert in resources.certifications %}
+                                <div class="p-3 bg-green-500/5 rounded-xl border border-green-500/10">
+                                    <p class="text-white font-medium">{{ cert.name }}</p>
+                                    <p class="text-green-300 text-sm">{{ cert.provider }}</p>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Practice Platforms -->
+                    <div class="mb-6">
+                        <button class="w-full flex items-center justify-between p-3 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-xl border border-blue-500/30 text-white hover:border-blue-500/50 transition-all duration-300" 
+                                onclick="toggleSection('practice')">
+                            <div class="flex items-center">
+                                <i class="fas fa-code mr-3 text-blue-400"></i>
+                                <span class="font-semibold">Practice</span>
+                            </div>
+                            <i class="fas fa-chevron-down transition-transform duration-300" id="practice-icon"></i>
+                        </button>
+                        <div id="practice" class="hidden mt-3 space-y-2">
+                            {% for platform in resources.practice_platforms %}
+                                <div class="p-3 bg-blue-500/5 rounded-xl border border-blue-500/10">
+                                    <a href="{{ platform.url }}" target="_blank" class="text-white font-medium hover:text-blue-400 transition-colors">
+                                        {{ platform.name }}
+                                    </a>
+                                    <p class="text-blue-300 text-sm">{{ platform.type }}</p>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Interview Prep -->
+                    <div>
+                        <button class="w-full flex items-center justify-between p-3 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-xl border border-yellow-500/30 text-white hover:border-yellow-500/50 transition-all duration-300" 
+                                onclick="toggleSection('interview')">
+                            <div class="flex items-center">
+                                <i class="fas fa-comments mr-3 text-yellow-400"></i>
+                                <span class="font-semibold">Interview Prep</span>
+                            </div>
+                            <i class="fas fa-chevron-down transition-transform duration-300" id="interview-icon"></i>
+                        </button>
+                        <div id="interview" class="hidden mt-3 space-y-2">
+                            {% for prep in resources.interview_prep %}
+                                <div class="p-3 bg-yellow-500/5 rounded-xl border border-yellow-500/10">
+                                    <a href="{{ prep.url }}" target="_blank" class="text-white font-medium hover:text-yellow-400 transition-colors">
+                                        {{ prep.name }}
+                                    </a>
+                                    <p class="text-yellow-300 text-sm">{{ prep.type }}</p>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="mt-12 text-center">
+            <div class="flex flex-wrap justify-center gap-4">
+                <button onclick="history.back()" 
+                        class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Jobs
+                </button>
+                {% if job_data.url %}
+                    <a href="{{ job_data.url }}" target="_blank" 
+                       class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 transform hover:scale-105">
+                        <i class="fas fa-paper-plane mr-2"></i>Apply for This Job
+                    </a>
+                {% endif %}
+                <button onclick="shareGuide()" 
+                        class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300">
+                    <i class="fas fa-share mr-2"></i>Share Guide
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function printGuide() {
+    window.print();
+}
+
+function saveGuide() {
+    const guideData = {
+        job: '{{ job_data.title }}',
+        company: '{{ job_data.company }}',
+        guide: '{{ guide|escapejs }}',
+        timestamp: new Date().toISOString()
+    };
+    
+    let savedGuides = JSON.parse(localStorage.getItem('applicationGuides') || '[]');
+    savedGuides.push(guideData);
+    localStorage.setItem('applicationGuides', JSON.stringify(savedGuides));
+    
+    // Show success animation
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-check mr-2"></i>Saved!';
+    button.classList.add('bg-green-600');
+    
+    setTimeout(() => {
+        button.innerHTML = originalText;
+        button.classList.remove('bg-green-600');
+    }, 2000);
+}
+
+function shareGuide() {
+    if (navigator.share) {
+        navigator.share({
+            title: 'Application Guide - {{ job_data.title }}',
+            text: 'Check out this AI-generated application guide!',
+            url: window.location.href
+        });
+    } else {
+        // Fallback - copy to clipboard
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-check mr-2"></i>Link Copied!';
+            setTimeout(() => {
+                button.innerHTML = originalText;
+            }, 2000);
+        });
+    }
+}
+
+function toggleSection(sectionId) {
+    const section = document.getElementById(sectionId);
+    const icon = document.getElementById(sectionId + '-icon');
+    
+    if (section.classList.contains('hidden')) {
+        section.classList.remove('hidden');
+        icon.style.transform = 'rotate(180deg)';
+    } else {
+        section.classList.add('hidden');
+        icon.style.transform = 'rotate(0deg)';
+    }
+}
+
+function updateProgress() {
+    const checkboxes = document.querySelectorAll('.checklist-checkbox');
+    const checked = document.querySelectorAll('.checklist-checkbox:checked');
+    const progress = (checked.length / checkboxes.length) * 100;
+    
+    document.getElementById('progress-bar').style.width = progress + '%';
+    document.getElementById('progress-text').textContent = `${checked.length}/${checkboxes.length} completed`;
+    
+    // Update check icons
+    checkboxes.forEach((checkbox, index) => {
+        const item = checkbox.closest('.checklist-item');
+        const icon = item.querySelector('.check-icon');
+        
+        if (checkbox.checked) {
+            item.classList.add('bg-green-500/10', 'border-green-500/30');
+            item.classList.remove('bg-gray-700/30', 'border-gray-600/30');
+            icon.classList.remove('opacity-0');
+            icon.classList.add('opacity-100');
+        } else {
+            item.classList.remove('bg-green-500/10', 'border-green-500/30');
+            item.classList.add('bg-gray-700/30', 'border-gray-600/30');
+            icon.classList.add('opacity-0');
+            icon.classList.remove('opacity-100');
+        }
+    });
+    
+    // Save progress
+    const checklistProgress = Array.from(checkboxes).map(cb => cb.checked);
+    localStorage.setItem('checklist_{{ job_data.title|slugify }}', JSON.stringify(checklistProgress));
+}
+
+// Load saved progress on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const savedProgress = localStorage.getItem('checklist_{{ job_data.title|slugify }}');
+    if (savedProgress) {
+        const progress = JSON.parse(savedProgress);
+        document.querySelectorAll('.checklist-checkbox').forEach((checkbox, index) => {
+            if (progress[index]) {
+                checkbox.checked = true;
+            }
+        });
+        updateProgress();
+    }
+    
+    // Add scroll animations
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    });
+    
+    document.querySelectorAll('.bg-gray-800\/50').forEach(element => {
+        element.style.opacity = '0';
+        element.style.transform = 'translateY(20px)';
+        element.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(element);
+    });
+});
+</script>
+{% endblock %}

@@ -49,5 +49,7 @@ class EditProfileView(LoginRequiredMixin, UpdateView):
         return self.request.user
     
     def form_valid(self, form):
+        user = form.save(commit=False)
+        user.save()
         messages.success(self.request, 'Your profile has been updated successfully!')
         return super().form_valid(form)

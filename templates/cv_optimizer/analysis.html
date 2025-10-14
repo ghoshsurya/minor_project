@@ -106,6 +106,14 @@
                             <i class="fas fa-upload mr-2"></i>Upload New CV
                         </a>
                         
+                        <a href="{% url 'cv_optimizer:ai_optimized' cv_upload.id %}" class="block w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg">
+                            <i class="fas fa-robot mr-2"></i>AI Analysis
+                        </a>
+                        
+                        <a href="{% url 'cv_optimizer:job_matching' cv_upload.id %}" class="block w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg">
+                            <i class="fas fa-briefcase mr-2"></i>Find Jobs
+                        </a>
+                        
                         <a href="{% url 'cv_optimizer:history' %}" class="block w-full border border-gray-600 text-gray-300 hover:bg-gray-700 font-bold py-3 px-4 rounded-lg">
                             <i class="fas fa-history mr-2"></i>View History
                         </a>

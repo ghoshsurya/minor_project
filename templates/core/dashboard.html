@@ -32,16 +32,24 @@
     <!-- Quick Actions -->
     <div class="mb-12">
         <h4 class="text-2xl font-bold text-white mb-6">Quick Actions</h4>
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
             <a href="{% url 'cv_optimizer:upload' %}" class="bg-blue-600 hover:bg-blue-700 text-white p-6 rounded-lg text-center transition-colors">
                 <i class="fas fa-upload text-3xl block mb-3"></i>
-                <span class="font-semibold">Upload New CV</span>
+                <span class="font-semibold">Upload CV</span>
+            </a>
+            <a href="{% url 'cv_optimizer:custom_job_search' %}" class="bg-purple-600 hover:bg-purple-700 text-white p-6 rounded-lg text-center transition-colors">
+                <i class="fas fa-robot text-3xl block mb-3"></i>
+                <span class="font-semibold">AI Job Search</span>
             </a>
             <a href="{% url 'job_scraper:search' %}" class="bg-green-600 hover:bg-green-700 text-white p-6 rounded-lg text-center transition-colors">
                 <i class="fas fa-search text-3xl block mb-3"></i>
                 <span class="font-semibold">Find Jobs</span>
             </a>
-            <a href="{% url 'cv_optimizer:history' %}" class="bg-purple-600 hover:bg-purple-700 text-white p-6 rounded-lg text-center transition-colors">
+            <a href="{% url 'cv_optimizer:latex_editor' %}" class="bg-red-600 hover:bg-red-700 text-white p-6 rounded-lg text-center transition-colors">
+                <i class="fas fa-code text-3xl block mb-3"></i>
+                <span class="font-semibold">LaTeX Editor</span>
+            </a>
+            <a href="{% url 'cv_optimizer:history' %}" class="bg-indigo-600 hover:bg-indigo-700 text-white p-6 rounded-lg text-center transition-colors">
                 <i class="fas fa-history text-3xl block mb-3"></i>
                 <span class="font-semibold">CV History</span>
             </a>
@@ -63,12 +71,15 @@
                     <h6 class="text-lg font-semibold text-white mb-1">{{ cv.job_role }}</h6>
                     <small class="text-gray-400">{{ cv.created_at|date:"M d, Y" }}</small>
                 </div>
-                <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2">
                     <span class="{% if cv.ats_score >= 70 %}bg-green-600{% elif cv.ats_score >= 40 %}bg-yellow-600{% else %}bg-red-600{% endif %} text-white px-3 py-1 rounded-full text-sm font-semibold">
                         {{ cv.ats_score }}%
                     </span>
-                    <a href="{% url 'cv_optimizer:analyze' cv.id %}" class="border border-blue-500 text-blue-400 hover:bg-blue-500 hover:text-white px-4 py-2 rounded transition-colors">
-                        View Analysis
+                    <a href="{% url 'cv_optimizer:ai_optimized' cv.id %}" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm">
+                        AI Analysis
+                    </a>
+                    <a href="{% url 'cv_optimizer:job_matching' cv.id %}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded text-sm">
+                        Find Jobs
                     </a>
                 </div>
             </div>

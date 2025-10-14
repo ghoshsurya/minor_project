@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Job Alerts - JobLift{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-12">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h2 class="text-4xl font-bold text-white mb-2">Job Alerts</h2>
+            <p class="text-gray-300">Manage your job alert preferences</p>
+        </div>
+        <a href="{% url 'job_scraper:create_alert' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-bold">
+            <i class="fas fa-plus mr-2"></i>Create Alert
+        </a>
+    </div>
+    
+    <!-- Alerts List -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {% for alert in alerts %}
+        <div class="bg-gray-800 rounded-xl p-6 border border-gray-700">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <h3 class="text-xl font-bold text-white mb-2">{{ alert.keywords }}</h3>
+                    <p class="text-gray-300 mb-1"><i class="fas fa-map-marker-alt mr-2"></i>{{ alert.location }}</p>
+                    <p class="text-gray-300 mb-1"><i class="fas fa-briefcase mr-2"></i>{{ alert.job_type|title }}</p>
+                    <p class="text-gray-400 text-sm">Created {{ alert.created_at|date:"M d, Y" }}</p>
+                </div>
+                <div class="flex items-center space-x-2">
+                    {% if alert.is_active %}
+                    <span class="bg-green-600 text-white px-2 py-1 rounded text-xs">Active</span>
+                    {% else %}
+                    <span class="bg-gray-600 text-white px-2 py-1 rounded text-xs">Inactive</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="flex space-x-3">
+                <a href="{% url 'job_scraper:edit_alert' alert.id %}" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-sm text-center">
+                    <i class="fas fa-edit mr-1"></i>Edit
+                </a>
+                <form method="post" action="{% url 'job_scraper:delete_alert' alert.id %}" class="flex-1" onsubmit="return confirm('Delete this alert?')">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg text-sm">
+                        <i class="fas fa-trash mr-1"></i>Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full text-center py-20">
+            <i class="fas fa-bell text-6xl text-gray-500 mb-6"></i>
+            <h3 class="text-2xl text-white mb-4">No Job Alerts</h3>
+            <p class="text-gray-300 mb-8">Create your first job alert to get notified about relevant opportunities</p>
+            <a href="{% url 'job_scraper:create_alert' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-bold">
+                <i class="fas fa-plus mr-2"></i>Create Your First Alert
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

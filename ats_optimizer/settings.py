@@ -89,6 +89,9 @@ LOGOUT_REDIRECT_URL = '/'
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+# Gemini AI Configuration
+GEMINI_API_KEY = config('GEMINI_API_KEY', default='')
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',

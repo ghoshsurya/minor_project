@@ -45,7 +45,7 @@ class JobSearchForm(forms.Form):
 class JobAlertForm(forms.ModelForm):
     class Meta:
         model = UserJobAlert
-        fields = ['keywords', 'location', 'job_type']
+        fields = ['keywords', 'location', 'job_type', 'is_active']
         widgets = {
             'keywords': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -55,15 +55,20 @@ class JobAlertForm(forms.ModelForm):
                 'class': 'form-control',
                 'placeholder': 'e.g., Mumbai, Bangalore, Remote'
             }),
-            'job_type': forms.Select(attrs={'class': 'form-select'})
+            'job_type': forms.Select(attrs={'class': 'form-select'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'})
         }
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['job_type'].choices = [
+            ('', 'All Types'),
             ('full-time', 'Full Time'),
             ('part-time', 'Part Time'),
             ('contract', 'Contract'),
             ('internship', 'Internship'),
             ('remote', 'Remote')
         ]
+        self.fields['job_type'].required = False
+        self.fields['location'].required = False
+        self.fields['is_active'].initial = True
